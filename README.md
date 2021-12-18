@@ -37,6 +37,11 @@ $ git clone https://github.com/TheDarknessToma/Phyc.git
 ```
 $ cd Phyc/Phyc
 ```
+***3. Install dependencies***
+```
+$ npm install discord.js@12.2.0
+$ npm install nekos.life
+```
 ***3. Run Phyc***
 ```
 $ node .
