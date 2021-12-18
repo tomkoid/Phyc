@@ -1,12 +1,12 @@
 {
   "name": "phyc",
   "version": "1.0.0",
-  "description": "",
+  "description": "Discord open-source utility & fun bot",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "TheDarknessToma",
   "license": "ISC",
   "dependencies": {
     "discordbot-script": "^3.3.1",
