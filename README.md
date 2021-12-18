@@ -1,2 +1,2 @@
-# Phyc
-![alt text](images/phyc.jpg) Discord open-source utility &amp; fun bot
+![Phyc](images/phyc.jpg) # Phyc
+Discord open-source utility &amp; fun bot
