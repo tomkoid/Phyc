@@ -1,7 +1,7 @@
-const Discord = require("discord.js")
+const { Client, Intents, MessageEmbed, Permissions } = require("discord.js")
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS] })
 const Crypto = require('crypto')
 const { stdout } = require("process")
-const client = new Discord.Client()
 const nekosapi = require('nekos.life')
 const neko = new nekosapi();
 
@@ -39,40 +39,52 @@ function msglog(cur) {
         stdout.write(authormessage + " used 1help command\n")
     } else if(cur=="clear") {
         stdout.write(authormessage + " used 1clear command\n")
-    }
+    } else if(cur=="stonks") {
+        stdout.write(authormessage + " used 1stonks command\n")
+    } else if(cur=="work") {
+        stdout.write(authormessage + " used 1work command\n")
+    } else if(cur=="avatar") {
+        stdout.write(authormessage + " used 1avatar command\n")
+    } else if(cur=="cat") {
+        stdout.write(authormessage + " used 1cat command\n")
+    } else if(cur=="wallpaper") {
+        stdout.write(authormessage + " used 1wallpaper command\n")
+    } else if(cur=="animeavatar") {
+        stdout.write(authormessage + " used 1animeavatar command\n")
+    } 
 }
 
 imageurl = "none"
 
-client.on("ready", () => {
+client.once("ready", () => {
     console.log(`Logged in as ${client.user.tag}!`)
     discordstatus = "Phyc BETA | 1help"
     client.user.setActivity(discordstatus);
 })
 
-client.on("message", async msg => {
+client.on("messageCreate", async msg => {
     authormessage = msg.author.tag
     
     if (msg.content == "<@!921498042253852682>") {
         if (msg.author === client.user) {
             return
         }
-        const phycembed = new Discord.MessageEmbed()
+        const phycembed = new MessageEmbed()
         .setColor("GREEN")
         .setTitle("PHYC")
         .setDescription(`**You can use 1help to see all commands!**`)
         .setFooter("Executed by " + msg.author.tag)
-        msg.channel.send(phycembed)
+        msg.channel.send({ embeds: [phycembed] })
     } else if (msg.content == "<@921498042253852682>") {
         if (msg.author === client.user) {
             return
         }
-        const phycembed = new Discord.MessageEmbed()
+        const phycembed = new MessageEmbed()
         .setColor("GREEN")
         .setTitle("PHYC")
         .setDescription(`**You can use 1help to see all commands!**`)
         .setFooter("Executed by " + msg.author.tag)
-        msg.channel.send(phycembed)
+        msg.channel.send({ embeds: [phycembed] })
     }
 
     if (msg.content === "1servers") {
@@ -82,157 +94,160 @@ client.on("message", async msg => {
     
     if (msg.content === "1help") {
         msglog("help")
-        const helpembed = new Discord.MessageEmbed()
+        const helpembed = new MessageEmbed()
         .setColor("GREEN")
         .setTitle("**PHYC HELP**\n\n***Moderation:***\n**1kick|1ban|1clear|1poll**\n\n***Fun:***\n**1work|1meme**\n\n***Other:***\n**1ping**")
-        msg.channel.send(helpembed)
+        msg.channel.send({ embeds: [helpembed] })
     }
     
     if (msg.content === "1ping") {
-        const botpingem = new Discord.MessageEmbed()
+        const botpingem = new MessageEmbed()
         .setColor("GREEN")
         .setTitle("PING")
         .setDescription(`**BOT Ping**: ${Date.now() - msg.createdTimestamp}ms\n**API Ping**: ${Math.round(client.ws.ping)}ms`)
         .setFooter("Executed by " + msg.author.tag)
         
-        msg.channel.send(botpingem)
+        msg.channel.send({ embeds: [botpingem] })
     }
 
     if (msg.content.startsWith("1clear")) {
         msglog("clear")
         let args = msg.content.split(' ');
-        const permissiondeniedem = new Discord.MessageEmbed()
+        const permissiondeniedem = new MessageEmbed()
         .setColor("RED")
         .setTitle("**CLEAR**")
         .setDescription("**ERROR**: Permission denied")
-        if(!msg.guild.member(msg.author).hasPermission('MANAGE_MESSAGES')) {
-            return msg.channel.send(permissiondeniedem)
+        msgauthor = await msg.guild.members.fetch(msg.author.id)
+        if(!msgauthor.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
+            return msg.channel.send({ embeds: [permissiondeniedem] })
         }
         if (args[1]==undefined) {
-            const noargs = new Discord.MessageEmbed()
+            const noargs = new MessageEmbed()
             .setColor("RED")
             .setTitle("**CLEAR**")
             .setDescription("**USAGE**: 1clear [AMOUNT]")
-            return msg.channel.send(noargs)
+            return msg.channel.send({ embeds: [noargs] })
         }
         clearamount = parseInt(args[1]) + 1
         if (isNaN(args[1])) {
-            const nan = new Discord.MessageEmbed()
+            const nan = new MessageEmbed()
             .setColor("RED")
             .setTitle("**CLEAR**")
             .setDescription("**USAGE**: 1clear [AMOUNT]")
-            return msg.channel.send(nan)
+            return msg.channel.send({ embeds: [nan] })
         }
         if (clearamount>100) {
-            const toomuchamount = new Discord.MessageEmbed()
+            const toomuchamount = new MessageEmbed()
             .setColor("RED")
             .setTitle("**CLEAR**")
             .setDescription("**ERROR**: Clear command can clear only up to 99!")
-            return msg.channel.send(toomuchamount)
+            return msg.channel.send({ embeds: [toomuchamount] })
         }
         try {
             msg.channel.bulkDelete(clearamount, true)
         } catch(error) {
             msg.channel.send("failed")
         }
-        const clearsuccess = new Discord.MessageEmbed()
+        const clearsuccess = new MessageEmbed()
         .setColor("GREEN")
         .setTitle("**CLEAR**")
         .setDescription("**SUCCESS**: Cleared " + args[1] + " message/s")
-        msg.channel.send(clearsuccess)
+        msg.channel.send({ embeds: [clearsuccess] })
     }
 
     if (msg.content === "1meme") {
         msglog("meme")
         randomnumber = randomnum(1, 500)
-        const embed = new Discord.MessageEmbed()
+        const embed = new MessageEmbed()
         .setColor("GREEN")
         .setTitle("**MEME**")
         .setDescription("Some meme for you")
         .setImage("https://ctk-api.herokuapp.com/meme/" + randomnumber)
         .setFooter("Executed by " + msg.author.tag)
-        msg.channel.send(embed)
+        msg.channel.send({ embeds: [embed] })
     }
 
     if (msg.content.startsWith("1kick")) {
         msglog("kick")
         reason = msg.content.split(' ');
         let member = msg.mentions.members.first();
-        const mentionuserem = new Discord.MessageEmbed()
+        const mentionuserem = new MessageEmbed()
         .setColor("RED")
         .setTitle("**KICK**")
         .setDescription("**ERROR**: You need to mention user or invalid user!\n**USAGE**: 1kick @USER [REASON] (reason is not required)")
-        const permissiondeniedem = new Discord.MessageEmbed()
+        const permissiondeniedem = new MessageEmbed()
         .setColor("RED")
         .setTitle("**KICK**")
         .setDescription("**ERROR**: Permission denied")
-        if(!member) return msg.channel.send(mentionuserem)
-        if(!member.kickable) return msg.channel.send(permissiondeniedem)
-        if(!msg.guild.member(msg.author).hasPermission('KICK_MEMBERS')) {
-            return msg.channel.send(permissiondeniedem)
+        if(!member) return msg.channel.send({ embeds: [mentionuserem] })
+        if(!member.kickable) return msg.channel.send({embeds: [permissiondeniedem] })
+        msgauthor = await msg.guild.members.fetch(msg.author.id)
+        if(!msgauthor.permissions.has(Permissions.FLAGS.BAN_MEMBERS)) {
+            return msg.channel.send({ embeds: [permissiondeniedem] })
         }
         if(reason[2]==undefined) {
             reason[2] = "None"
         }
         if(reason[2].startsWith("<@!")) {
-            const invalidusageem = new Discord.MessageEmbed()
+            const invalidusageem = new MessageEmbed()
             .setColor("RED")
             .setTitle("**BAN**")
             .setDescription("**ERROR**: Invalid usage!\n**USAGE**: 1ban @USER [REASON] (reason is not required)")
-            return msg.channel.send(invalidusageem);
+            return msg.channel.send({ embeds: [invalidusageem] });
         }
         member.kick(reason[2]);
-        const embed = new Discord.MessageEmbed()
+        const embed = new MessageEmbed()
         .setColor("YELLOW")
         .setTitle("**KICK**")
         .setDescription("**Kick**: <@" + member + ">\n**Kicked by**: <@" + msg.author + ">\n**Reason**: " + reason[2])
-        msg.channel.send(embed)
+        msg.channel.send({ embeds: [embed] })
     }
     
     if (msg.content.startsWith("1ban")) {
         msglog("ban")
         reason = msg.content.split(' ');
         let member = msg.mentions.members.first();
-        const mentionuserem = new Discord.MessageEmbed()
+        const mentionuserem = new MessageEmbed()
         .setColor("RED")
         .setTitle("**BAN**")
         .setDescription("**ERROR**: You need to mention user or invalid user!\n**USAGE**: 1ban @USER [REASON] (reason is not required)")
-        const permissiondeniedem = new Discord.MessageEmbed()
+        const permissiondeniedem = new MessageEmbed()
         .setColor("RED")
         .setTitle("**BAN**")
         .setDescription("**ERROR**: Permission denied")
-        if(!member) return msg.channel.send(mentionuserem)
-        if(!member.kickable) return msg.channel.send(permissiondeniedem)
-        if(!msg.guild.member(msg.author).hasPermission('BAN_MEMBERS')) {
-            return msg.channel.send(permissiondeniedem)
+        if(!member) return msg.channel.send({embeds: [mentionuserem]})
+        if(!member.kickable) return msg.channel.send({embeds: [permissiondeniedem] })
+        msgauthor = await msg.guild.members.fetch(msg.author.id)
+        if(!msgauthor.permissions.has(Permissions.FLAGS.BAN_MEMBERS)) {
+            return msg.channel.send({ embeds: [permissiondeniedem] })
         }
         if(reason[2]==undefined) {
             reason[2] = "None"
         }
         if(reason[2].startsWith("<@!")) {
-            const invalidusageem = new Discord.MessageEmbed()
+            const invalidusageem = new MessageEmbed()
             .setColor("RED")
             .setTitle("**BAN**")
             .setDescription("**ERROR**: Invalid usage!\n**USAGE**: 1ban @USER [REASON] (reason is not required)")
-            return msg.channel.send(invalidusageem);
+            return msg.channel.send({ embeds: [invalidusageem] });
         }
-        const embed = new Discord.MessageEmbed()
+        const embed = new MessageEmbed()
         .setColor("RED")
         .setTitle("**BAN**")
         .setDescription("**Ban**: <@" + member + ">\n**Banned by**: <@" + msg.author + ">\n**Reason**: " + reason[2])
         member.ban({reason: reason[2]});
-        msg.channel.send(embed)
+        msg.channel.send({ embeds: [embed] })
     }
     
     if (msg.content.startsWith("1pg")) {
         msglog("pg")
         args = msg.content.split(' ');
         if (isNaN(args[1])) {
-            const nan = new Discord.MessageEmbed()
+            const nan = new MessageEmbed()
             .setColor("RED")
             .setTitle("**PASSWORD GENERATOR**")
             .setDescription("**ERROR**: Length must be a number (int)")
-            return msg.channel.send(nan)
+            return msg.channel.send({ embeds: [nan] })
         }
         if (args[1]==undefined) {
             passwordsize = parseInt(21)
@@ -241,21 +256,21 @@ client.on("message", async msg => {
             passwordsize = args[1]
         }
         if (passwordsize>100) {
-            const embed = new Discord.MessageEmbed()
+            const embed = new MessageEmbed()
             .setColor("RED")
             .setTitle("**PASSWORD GENERATOR**")
             .setDescription("**ERROR**: Password can be long only up to 100 characters")
             .setFooter("Do not give your password to others!")
-            return msg.channel.send(embed)
+            return msg.channel.send({ embeds: [embed] })
         }
         randompass = randomString()
         try {
-            const embed = new Discord.MessageEmbed()
+            const embed = new MessageEmbed()
             .setColor("GREEN")
             .setTitle("**PASSWORD GENERATOR**")
             .setDescription("**Random password**: " + randompass)
             .setFooter("Do not give your password to others!")
-            msg.channel.send(embed)
+            msg.channel.send({ embeds: [embed] })
         } catch (error) {
             console.log(error);
         }
@@ -303,24 +318,42 @@ client.on("message", async msg => {
         } else if (gendernumber === 2) {
             gender = "Female"
         }
-        const workembed = new Discord.MessageEmbed()
+        const workembed = new MessageEmbed()
         .setColor("GREEN")
         .setTitle("**WORK**")
         .setDescription("**Your Work**: " + work + "\n**Your Income**: " + income + "$\n** Your Gender**: " + gender)
-        msg.channel.send(workembed)
+        msg.channel.send({ embeds: [workembed] })
     }
     
     if (msg.content.startsWith("1poll")) {
         msglog("poll")
         arguments = msg.content.split("1poll ")[1]
         if (arguments==undefined) {
-            const usage = new Discord.MessageEmbed()
+            const usage = new MessageEmbed()
             .setColor("RED")
             .setTitle("**POLL**")
             .setDescription("**USAGE**: 1poll <MESSAGE>")
-            return msg.channel.send(usage)
+            return msg.channel.send({ embeds: [usage] })
         }
-        const poll = new Discord.MessageEmbed()
+        msgauthor = await msg.guild.members.fetch(msg.author.id)
+        if (arguments.includes("@everyone")) {
+            if (!msgauthor.permissions.has(Permissions.FLAGS.MENTION_EVERYONE)) {
+                const everyoneerror = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**POLL**")
+                .setDescription("**ERROR**: You do not have permission to mention everyone!")
+                return msg.channel.send({ embeds: [everyoneerror] })
+            }
+        } else if (arguments.includes("@here")) {
+            if (!msgauthor.permissions.has(Permissions.FLAGS.MENTION_EVERYONE)) {
+                const everyoneerror = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**POLL**")
+                .setDescription("**ERROR**: You do not have permission to mention everyone!")
+                return msg.channel.send({ embeds: [everyoneerror] })
+            }
+        }
+        const poll = new MessageEmbed()
         .setColor("GREEN")
         .setTitle("**POLL**")
         .setDescription(arguments)
@@ -329,54 +362,51 @@ client.on("message", async msg => {
         } catch(error) {
             msg.channel.send("Failed to delete command message!")
         }
-        const pollmsg = await msg.channel.send(poll)
+        const pollmsg = await msg.channel.send({ embeds: [poll] })
         pollmsg.react("✅")
         pollmsg.react("❎")
     }
 
-    if (msg.content.startsWith("1argtest")) {
-        arguments = msg.content.split("1argtest ")[1]
-        msg.channel.send(arguments)
-    }
-
     if (msg.content.startsWith("1stonks")) {
+        msglog("stonks")
         arguments = msg.content.split("1stonks ")[1]
         args = msg.content.split(' ')
         if (args[1]==undefined) {
-            const stonksembed = new Discord.MessageEmbed()
+            const stonksembed = new MessageEmbed()
             .setColor("GREEN")
             .setTitle("**STONKS**")
             .setImage("https://vacefron.nl/api/stonks?user=" + msg.author.displayAvatarURL() + "?size=4096")
-            return msg.channel.send(stonksembed)
+            return msg.channel.send({ embeds: [stonksembed] })
         }
         let mumber = msg.mentions.members.first();
         if (!mumber) {
-            const stonksembed = new Discord.MessageEmbed()
+            const stonksembed = new MessageEmbed()
             .setColor("RED")
             .setTitle("**STONKS**")
             .setDescription("**ERROR**: You need to mention someone or invalid user!")
-            return msg.channel.send(stonksembed)
+            return msg.channel.send({ embeds: [stonksembed] })
         }
         let member = client.users.fetch(mumber.id)
         member.then(function(memberget) {
             imageurl = memberget.displayAvatarURL();
-            const stonksembed = new Discord.MessageEmbed()
+            const stonksembed = new MessageEmbed()
             .setColor("GREEN")
             .setTitle("**STONKS**")
             .setImage("https://vacefron.nl/api/stonks?user=" + imageurl + "?size=4096")
-            msg.channel.send(stonksembed)
+            msg.channel.send({ embeds: [stonksembed] })
         })
     }
 
     if (msg.content.startsWith("1avatar")) {
+        msglog("avatar")
         arguments = msg.content.split("1stonks ")[1]
         let mumber = msg.mentions.members.first();
         if (!mumber) {
-            const avatarinvalid = new Discord.MessageEmbed()
+            const avatarinvalid = new MessageEmbed()
             .setColor("RED")
             .setTitle("**AVATAR**")
             .setDescription("**ERROR**: You need to mention someone or invalid user!")
-            return msg.channel.send(avatarinvalid)
+            return msg.channel.send({ embeds: [avatarinvalid] })
         }
         let member = client.users.fetch(mumber.id)
         member.then(function(memberget) {
@@ -386,40 +416,43 @@ client.on("message", async msg => {
     }
 
     if (msg.content === "1cat") {
+        msglog("cat")
         cat = await neko.sfw.meow()
-        const catembed = new Discord.MessageEmbed()
+        const catembed = new MessageEmbed()
         .setColor("ORANGE")
         .setTitle("**CAT**")
         .setDescription("Some cat for you")
         .setImage(cat.url)
-        msg.channel.send(catembed)
+        msg.channel.send({ embeds: [catembed] })
     }
     
     if (msg.content === "1wallpaper") {
+        msglog("wallpaper")
         if (!msg.channel.nsfw) {
-            const wallnsfwembed = new Discord.MessageEmbed()
+            const wallnsfwembed = new MessageEmbed()
             .setColor("RED")
             .setTitle("**Wallpaper**")
             .setDescription("**ERROR**: In these wallpapers can be found some NSFW ones")
-            return msg.channel.send(wallnsfwembed)
+            return msg.channel.send({ embeds: [wallnsfwembed] })
         }
         wall = await neko.sfw.wallpaper()
-        const wallembed = new Discord.MessageEmbed()
+        const wallembed = new MessageEmbed()
         .setColor("ORANGE")
         .setTitle("**Wallpaper**")
         .setDescription("Some wallpaper for you")
         .setImage(wall.url)
-        msg.channel.send(wallembed)
+        msg.channel.send({ embeds: [wallembed] })
     }
 
     if (msg.content === "1animeavatar") {
+        msglog("animeavatar")
         animeavatar = await neko.sfw.avatar()
-        const animeavatarembed = new Discord.MessageEmbed()
+        const animeavatarembed = new MessageEmbed()
         .setColor("ORANGE")
         .setTitle("**Anime Avatar**")
         .setDescription("Some avatar for you")
         .setImage(animeavatar.url)
-        msg.channel.send(animeavatarembed)
+        msg.channel.send({ embeds: [animeavatarembed] })
     }
 })
 
