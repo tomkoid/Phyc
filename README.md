@@ -39,7 +39,7 @@ $ cd Phyc/Phyc
 ```
 ***3. Install dependencies***
 ```
-$ npm install discord.js@12.2.0
+$ npm install discord.js
 $ npm install nekos.life
 ```
 ***3. Run Phyc***
