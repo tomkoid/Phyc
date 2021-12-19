@@ -18,6 +18,31 @@ function randomString(size = parseInt(passwordsize)) {
     )
   }
 
+function calculator(number1, operator, number2) {
+    if(isNaN(number1)) {
+        return "wrongnumber"
+    } else if(isNaN(number2)) {
+        return "wrongnumber"
+    }
+    switch(operator) {
+        case "+":
+            returnednumber = number1 + number2
+            break
+        case "-":
+            returnednumber = number1 - number2
+            break
+        case "*":
+            returnednumber = number1 * number2
+            break
+        case "/":
+            returnednumber = number1 / number2
+            break
+        default:
+            returnednumber = "invalid"
+    }
+    return returnednumber
+}
+
 function msglog(cur) {
     if(cur=="servers") {
         stdout.write(authormessage + " used 1servers command\n")
@@ -51,7 +76,9 @@ function msglog(cur) {
         stdout.write(authormessage + " used 1wallpaper command\n")
     } else if(cur=="animeavatar") {
         stdout.write(authormessage + " used 1animeavatar command\n")
-    } 
+    } else if(cur=="forceleave") {
+        stdout.write(authormessage + " used 1forceleave command\n")
+    }
 }
 
 imageurl = "none"
@@ -92,6 +119,27 @@ client.on("messageCreate", async msg => {
         msg.channel.send(`**Currently in: ** ${client.guilds.cache.size} **servers**`);
     }
     
+    if (msg.content == "1forceleave") {
+        msglog("forceleave")
+        msgauthor = await msg.guild.members.fetch(msg.author.id)
+        if (!msgauthor.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
+            const noadmin = new MessageEmbed()
+            .setColor("RED")
+            .setTitle("Force-Leave")
+            .setDescription("**ERROR**: Permission denied")
+            .setFooter("Executed by " + msg.author.tag)
+            console.log("dont have perms")
+            return msg.channel.send({embeds: [noadmin] })
+        }
+        const leave = new MessageEmbed()
+        .setColor("GREEN")
+        .setTitle("Force-Leave")
+        .setDescription("**SUCCESS**: Leaved")
+        .setFooter("Executed by " + msg.author.tag)
+        msg.channel.send({embeds: [leave] })
+        msg.guild.leave()
+    }
+
     if (msg.content === "1help") {
         msglog("help")
         const helpembed = new MessageEmbed()
@@ -242,18 +290,19 @@ client.on("messageCreate", async msg => {
     if (msg.content.startsWith("1pg")) {
         msglog("pg")
         args = msg.content.split(' ');
-        if (isNaN(args[1])) {
+        if (args[1]==undefined) {
+            console.log("is undefined")
+            passwordsize = parseInt(21)
+            randompass = randomString()
+        } else {
+            passwordsize = args[1]
+        }
+        if (isNaN(passwordsize)) {
             const nan = new MessageEmbed()
             .setColor("RED")
             .setTitle("**PASSWORD GENERATOR**")
             .setDescription("**ERROR**: Length must be a number (int)")
             return msg.channel.send({ embeds: [nan] })
-        }
-        if (args[1]==undefined) {
-            passwordsize = parseInt(21)
-            randompass = randomString()
-        } else {
-            passwordsize = args[1]
         }
         if (passwordsize>100) {
             const embed = new MessageEmbed()
@@ -325,6 +374,30 @@ client.on("messageCreate", async msg => {
         msg.channel.send({ embeds: [workembed] })
     }
     
+    if (msg.content.startsWith("1calc")) {
+        args = msg.content.split(' ');
+        number1 = parseInt(args[1])
+        operator = args[2]
+        number2 = parseInt(args[3])
+        result = calculator(number1, operator, number2)
+        if(result == "wrong-syntax") {
+            msg.channel.send("wrong syntax")
+        } else if(result == "invalidop") {
+            msg.channel.send("invalid operator!")
+        } else if(result == "wrongnumber") {
+            const wrongnumber = new MessageEmbed()
+            .setColor("RED")
+            .setTitle("CALCULATOR")
+            .setDescription("**ERROR**: Unknown error\n**USAGE**: 1calc <Number 1> <Operator> <Number 2>")
+            return msg.channel.send({embeds: [wrongnumber]})
+        }
+        const resultembed = new MessageEmbed()
+        .setColor("GREEN")
+        .setTitle("**CALCULATOR**")
+        .setDescription("**Result is**: " + result.toString())
+        msg.channel.send({embeds: [resultembed]})
+    }
+
     if (msg.content.startsWith("1poll")) {
         msglog("poll")
         arguments = msg.content.split("1poll ")[1]
