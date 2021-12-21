@@ -50,3 +50,5 @@ or
 ```
 $ node index.js
 ```
+
+# Enjoy!
