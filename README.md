@@ -41,6 +41,7 @@ $ cd Phyc/Phyc
 ```
 $ npm install discord.js
 $ npm install nekos.life
+$ npm install node-fetch
 ```
 ***3. Run Phyc***
 ```
