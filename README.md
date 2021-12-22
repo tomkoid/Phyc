@@ -52,4 +52,13 @@ or
 $ node index.js
 ```
 
-# Enjoy!
+***4. Set up permissions***
+- You must on your discord server allow these permissions:
+  - SEND_MESSAGES
+  - MANAGE_MESSAGES
+  - EMBED_LINKS
+  - ATTACH_FILES
+- You can check perms by 1perms command. It should return you "No problem found".
+(if 1perms doesn't return you anything, bot doesn't have permissions for sending messages)
+---
+### Enjoy!
