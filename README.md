@@ -1,8 +1,6 @@
  
  ​![​Header​](images/header.jpg)
 
-**Original BOT:** Phyc#4288
-
 # Commands
 ---
 - 1help - Shows command list
@@ -16,6 +14,16 @@
 **Fun commands:**
 - 1meme - Shows random meme
 - 1stonks - Creates image of your avatar with stonks meme
+---
+**MC commands:**
+- 1mc <IP:PORT> - Shows status of mc server
+- 1mcpe <IP:PORT> - Shows status of mcpe server
+- 1mcserver - Shows status of configured mc server
+- 1mcpeserver - Shows status of configured mcpe server
+- 1mcserverset <IP:PORT> - Configure mc server ip and port
+- 1mcpeserverset <IP:PORT> - Configure mcpe server ip and port
+- 1mcserverrm - Remove configured mc server
+- 1mcserverrm - Remove configured mcpe server
 ---
 **Image commands:**
 - 1cat - Shows random cat image
@@ -39,9 +47,9 @@ $ cd Phyc/Phyc
 ```
 ***3. Install dependencies***
 ```
-$ npm install discord.js
-$ npm install nekos.life
-$ npm install node-fetch
+$ npm i discord.js
+$ npm i nekos.life
+$ npm i https
 ```
 ***3. Run Phyc***
 ```
@@ -63,4 +71,7 @@ $ node index.js
 - You can check perms by 1perms command. It should return you "No problem found".
 (if 1perms doesn't return you anything, then bot doesn't have permissions for sending messages)
 ---
+**Original BOT:** Phyc#4288
+
+
 ​![​Header​](images/featured-built-with-love.svg) 
