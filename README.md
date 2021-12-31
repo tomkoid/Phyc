@@ -1,9 +1,7 @@
  
  ​![​Header​](images/header.jpg)
-# Phyc <img src="images/phyc.jpg" width="30" title="hover text">
-Discord open-source utility &amp; fun bot
 
-**BOT:** Phyc#4288
+**Original BOT:** Phyc#4288
 
 # Commands
 ---
