@@ -14,6 +14,7 @@
 **Fun commands:**
 - 1meme - Shows random meme
 - 1stonks - Creates image of your avatar with stonks meme
+- 1gay - Show how many percent are you gay
 ---
 **MC commands:**
 - 1mc <IP:PORT> - Shows status of mc server
