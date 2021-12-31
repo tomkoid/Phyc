@@ -1,27 +1,34 @@
-const { Client, Intents, MessageEmbed, Permissions } = require("discord.js")
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS] })
-const Crypto = require('crypto')
-const { stdout } = require("process")
-const nekosapi = require('nekos.life')
+// Imports
+const { Client, Intents, MessageEmbed, Permissions } = require("discord.js");
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_MESSAGE_REACTIONS] });
+const Crypto = require('crypto');
+const nekosapi = require('nekos.life');
 const neko = new nekosapi();
 const fs = require("fs");
-const fetch = require('node-fetch');
+const https = require('https');
 
-const botname = "Phyc"
-const botownerid = "422944426206167052";
+// Constants
+const botname = "Phyc";
+const botownerid = "YOUR_ID";
+const showlogintoken = true; // If its true, then bot will be showing TOKEN in console
+const onlinemessage = false; // Sends message, that bot is online into specific channel
+const onlinemessagechannelid = "" // If above is true, you must set to this your channel ID
+const logmessages = true // Logs all messages sended in all channels, where Phyc has permission to view the channel
+const TOKEN = "YOUR_TOKEN";
 
+// Functions
 function randomString(size = parseInt(passwordsize)) {  
     return Crypto
-      .randomBytes(size = parseInt(passwordsize))
-      .toString('base64')
-      .slice(0, size)
-  }
+        .randomBytes(size = parseInt(passwordsize))
+        .toString('base64')
+        .slice(0, size)
+    }
 
-  function randomnum(min, max) {  
+function randomnum(min, max) {  
     return Math.floor(
-      Math.random() * (max - min) + min
+        Math.random() * (max - min) + min
     )
-  }
+}
 
 function calculator(number1, operator, number2) {
     if(isNaN(number1)) {
@@ -48,59 +55,44 @@ function calculator(number1, operator, number2) {
     return returnednumber
 }
 
-function msglog(cur) {
-    if(cur=="servers") {
-        stdout.write(authormessage + " used 1servers command\n")
-    } else if(cur=="kick") {
-        stdout.write(authormessage + " used 1kick command\n")
-    } else if(cur=="ban") {
-        stdout.write(authormessage + " used 1ban command\n")
-    } else if(cur=="refreshstatus") {
-        stdout.write(authormessage + " used 1refreshstatus command\n")
-    } else if(cur=="pg") {
-        stdout.write(authormessage + " used 1pg command\n")
-    } else if(cur=="meme") {
-        stdout.write(authormessage + " used 1meme command\n")
-    } else if(cur=="poll") {
-        stdout.write(authormessage + " used 1poll command\n")
-    } else if(cur=="uptime") {
-        stdout.write(authormessage + " used 1uptime command\n")
-    } else if(cur=="help") {
-        stdout.write(authormessage + " used 1help command\n")
-    } else if(cur=="clear") {
-        stdout.write(authormessage + " used 1clear command\n")
-    } else if(cur=="stonks") {
-        stdout.write(authormessage + " used 1stonks command\n")
-    } else if(cur=="work") {
-        stdout.write(authormessage + " used 1work command\n")
-    } else if(cur=="avatar") {
-        stdout.write(authormessage + " used 1avatar command\n")
-    } else if(cur=="cat") {
-        stdout.write(authormessage + " used 1cat command\n")
-    } else if(cur=="wallpaper") {
-        stdout.write(authormessage + " used 1wallpaper command\n")
-    } else if(cur=="animeavatar") {
-        stdout.write(authormessage + " used 1animeavatar command\n")
-    } else if(cur=="forceleave") {
-        stdout.write(authormessage + " used 1forceleave command\n")
-    }
-}
-
 imageurl = "none"
 
-client.once("ready", () => {
+// On ready
+client.once("ready", client => {
     console.log(`Logged in as ${client.user.tag}!`)
-    discordstatus = "Phyc RC | 1help"
+    discordstatus = "Phyc | 1help"
     client.user.setActivity(discordstatus);
+    if(onlinemessage) {
+        if(onlinemessagechannelid=="") {
+            return console.log("ERROR: Nowhere to send online message (const onlinemessagechannelid)")
+        }
+        try {
+            client.channels.cache.get(onlinemessagechannelid).send(botname + " is ONLINE!")
+        } catch(error) {
+            console.log("ERROR while sending message to onlinemessagechannel: " + error)
+        }
+    }
 })
 
+// On message
 client.on("messageCreate", async msg => {
     authormessage = msg.author.tag
-    
-    // Check if sended message is not bot's
+
     if (msg.author == client.user) {
         return
     }
+
+    if (msg.author.bot) return;
+
+    if (logmessages) {
+        let dateobject = new Date();
+        let curtime = "[" + dateobject.getHours() + "h " + dateobject.getMinutes() + "m " + dateobject.getSeconds() + "s]"
+        console.log("\n" + curtime + " " + authormessage + " sended message in " + msg.channel.name + " in " + msg.guild.name)
+        console.log("Content: " + msg.content)
+    }
+
+    // Check if sended message is by webhook
+    if (msg.webhookId) return;
 
     // Permissions
     if(!msg.guild.me.permissions.has(Permissions.FLAGS.SEND_MESSAGES)) {
@@ -112,23 +104,31 @@ client.on("messageCreate", async msg => {
     }
     if (msg.content == "1perms") {
         if(!msg.guild.me.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
-            return msg.channel.send("**ERROR**: The bot has not permission to manage messages.")
+            return msg.channel.send("**ERROR**: The bot doesn't have permission to manage messages.")
         }
     
         if(!msg.guild.me.permissions.has(Permissions.FLAGS.EMBED_LINKS)) {
-            return msg.channel.send("**ERROR**: The bot has not permission to embed links.")
+            return msg.channel.send("**ERROR**: The bot doesn't have permission to embed links.")
         }
     
         if(!msg.guild.me.permissions.has(Permissions.FLAGS.ATTACH_FILES)) {
-            return msg.channel.send("**ERROR**: The bot has not permission to attach files.")
+            return msg.channel.send("**ERROR**: The bot doesn't have permission to attach files.")
         }
     
         if(!msg.guild.me.permissionsIn(msg.channel.id).has(Permissions.FLAGS.EMBED_LINKS)) {
-            return msg.channel.send("**ERROR**: The bot has not permission to embed links in this channel.")
+            return msg.channel.send("**ERROR**: The bot doesn't have permission to embed links in this channel.")
         }
     
         if(!msg.guild.me.permissionsIn(msg.channel.id).has(Permissions.FLAGS.ATTACH_FILES)) {
-            return msg.channel.send("**ERROR**: The bot has not permission to attach files in this channel.")
+            return msg.channel.send("**ERROR**: The bot doesn't have permission to attach files in this channel.")
+        }
+
+        if(!msg.guild.me.permissionsIn(msg.channel.id).has(Permissions.FLAGS.ADD_REACTIONS)) {
+            return msg.channel.send("**ERROR**: The bot doesn't have permission to add reactions in this channel.")
+        }
+
+        if(!msg.guild.me.permissionsIn(msg.channel.id).has(Permissions.FLAGS.READ_MESSAGE_HISTORY)) {
+            return msg.channel.send("**ERROR**: The bot doesn't have permission to read message history in this channel.")
         }
         const problemnotfound = new MessageEmbed()
         .setColor("GREEN")
@@ -156,6 +156,15 @@ client.on("messageCreate", async msg => {
         return
     }
     
+    if(!msg.guild.me.permissionsIn(msg.channel.id).has(Permissions.FLAGS.ADD_REACTIONS)) {
+        return
+    }
+
+    if(!msg.guild.me.permissionsIn(msg.channel.id).has(Permissions.FLAGS.READ_MESSAGE_HISTORY)) {
+        return
+    }
+
+    // Commands
     try {
         if (msg.content == "<@!921498042253852682>") {
             if (msg.author === client.user) {
@@ -179,14 +188,22 @@ client.on("messageCreate", async msg => {
             msg.channel.send({ embeds: [phycembed] })
         }
 
-        if (msg.content === "1servers") {
-            msglog("servers")
-            msg.channel.send(`**Currently in: ** ${client.guilds.cache.size} **servers**`);
+        if (msg.content === "1help") {
+            const helpembed = new MessageEmbed()
+            .setColor("GREEN")
+            .setTitle("**PHYC HELP**\n")
+            .addField("Moderation", "1kick|1ban|1clear|1poll|1warn")
+            .addField("Fun", "1work|1meme|1stonks|1gay")
+            .addField("AntiLink", "1antilink <on/off>")
+            .addField("Minecraft Status", "1mc|1mcserver|1mcpeserver")
+            .addField("Minecraft Status Management", "1mcserverset|1mcpeserverset|1mcserverrm|1mcpeserverrm")
+            .addField("Other", "1ping|1forceleave")
+            msg.channel.send({ embeds: [helpembed] })
         }
-
+        
         if (msg.content.startsWith("https://")) {
             msgauthor = await msg.guild.members.fetch(msg.author.id)
-            if(msgauthor.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
+            if(msgauthor.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
                 return
             }
             let data = fs.readFileSync("database.json", "utf8");
@@ -195,14 +212,18 @@ client.on("messageCreate", async msg => {
             if(database[antilinkloc] === "yes") {
                 console.log(msg.author.tag + " sended link in " + msg.guild.id + " when autolink was on")
                 if(msg.guild.me.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
-                    msg.channel.bulkDelete(1, true)
+                    try {
+                        msg.delete(1000);
+                    } catch(error) {
+                        console.log(error)
+                    }
                 } else {
                     msg.channel.send("Bot has not permission to MANAGE_MESSAGES")
                 }
             }
         } else if (msg.content.startsWith("http://")) {
             msgauthor = await msg.guild.members.fetch(msg.author.id)
-            if(msgauthor.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
+            if(msgauthor.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
                 return
             }
             let data = fs.readFileSync("database.json", "utf8");
@@ -211,30 +232,40 @@ client.on("messageCreate", async msg => {
             if(database[antilinkloc] === "yes") {
                 console.log(msg.author.tag + " sended link in " + msg.guild.id + " when autolink was on")
                 if(msg.guild.me.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
-                    msg.channel.bulkDelete(1, true)
+                    try {
+                        msg.delete(1000);
+                    } catch(error) {
+                        console.log(error)
+                    }
                 } else {
                     msg.channel.send("Bot has not permission to MANAGE_MESSAGES")
                 }
             }
         } else if (msg.content.startsWith("ftp://")) {
             msgauthor = await msg.guild.members.fetch(msg.author.id)
-            if(msgauthor.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
+            if(msgauthor.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
                 return
             }
             let data = fs.readFileSync("database.json", "utf8");
             let database = JSON.parse(data)
             let antilinkloc = "antilink-" + msg.guild.id
             if(database[antilinkloc] === "yes") {
-                console.log(msg.author.tag + " sended link in " + msg.guild.id + " when autolink was on")
+                if(logmessages) {
+                    console.log(msg.author.tag + " sended link in " + msg.guild.id + " when autolink was on")
+                }
                 if(msg.guild.me.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
-                    msg.channel.bulkDelete(1, true)
+                    try {
+                        msg.delete(1000);
+                    } catch(error) {
+                        console.log(error)
+                    }
                 } else {
                     msg.channel.send("Bot has not permission to MANAGE_MESSAGES")
                 }
             }
         } else if (msg.content.startsWith("file://")) {
             msgauthor = await msg.guild.members.fetch(msg.author.id)
-            if(msgauthor.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
+            if(msgauthor.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
                 return
             }
             let data = fs.readFileSync("database.json", "utf8");
@@ -243,7 +274,11 @@ client.on("messageCreate", async msg => {
             if(database[antilinkloc] === "yes") {
                 console.log(msg.author.tag + " sended link in " + msg.guild.id + " when autolink was on")
                 if(msg.guild.me.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
-                    msg.channel.bulkDelete(1, true)
+                    try {
+                        msg.delete(1000);
+                    } catch(error) {
+                        console.log(error)
+                    }
                 } else {
                     msg.channel.send("Bot has not permission to MANAGE_MESSAGES")
                 }
@@ -295,9 +330,8 @@ client.on("messageCreate", async msg => {
         }
 
         if (msg.content == "1forceleave") {
-            msglog("forceleave")
             msgauthor = await msg.guild.members.fetch(msg.author.id)
-            if (!msgauthor.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
+            if (!msgauthor.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
                 const noadmin = new MessageEmbed()
                 .setColor("RED")
                 .setTitle("Force-Leave")
@@ -314,13 +348,318 @@ client.on("messageCreate", async msg => {
             msg.guild.leave()
         }
 
-        if (msg.content.startsWith("1mc")) {
-            let args = msg.content.split(' ');
-            let settings = { method: "Get" };
-            try {
-                fetch("https://api.mcsrvstat.us/2/" + args[1], settings)
-                    .then(res => res.json())
-                    .then((json) => {
+        if (msg.content.startsWith("1mcserverset")) {
+            args = msg.content.split(' ');
+            msgauthor = await msg.guild.members.fetch(msg.author.id)
+            if(!msgauthor.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
+                const noperms = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**MC SERVER STATUS**")
+                .setDescription("**ERROR**: Permission denied")
+                return msg.channel.send({embeds: [noperms]})
+            }
+            if(args[1]==undefined) {
+                const undefinedargs = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**MC SERVER STATUS**")
+                .setDescription("**USAGE**: 1mcserverset <ip:port>")
+                return msg.channel.send({embeds: [undefinedargs]})
+            }
+            if(args[1]=="none") {
+                const noneset = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**MC SERVER STATUS**")
+                .setDescription("**ERROR**: You can't set server as none")
+                return msg.channel.send({embeds: [noneset]})
+            }
+            let mcdata = fs.readFileSync("database.json", "utf8");
+            let mcdatabase = JSON.parse(mcdata)
+            let mcserverloc = "mcserver-" + msg.guild.id
+            mcdatabase[mcserverloc] = args[1].toString()
+            let mcdatabasejson = JSON.stringify(mcdatabase)
+            fs.writeFileSync("database.json", mcdatabasejson)
+            const successserverset = new MessageEmbed()
+            .setColor("GREEN")
+            .setTitle("**MC SERVER STATUS**")
+            .setDescription("**SUCCESS**: Server set to " + args[1].toString())
+            msg.channel.send({embeds: [successserverset]})
+        }
+
+        if (msg.content == "1mcserver") {
+            let mcdata = fs.readFileSync("database.json", "utf8");
+            let mcdatabase = JSON.parse(mcdata)
+            let mcserverloc = "mcserver-" + msg.guild.id
+            if(mcdatabase[mcserverloc]==null||mcdatabase[mcserverloc]=="none") {
+                const noserver = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**MC SERVER STATUS**")
+                .setDescription("**ERROR**: No server configured")
+                return msg.channel.send({embeds: [noserver]})
+            }
+            https.get("https://api.mcsrvstat.us/2/" + mcdatabase[mcserverloc],(res) => {
+                let body = "";
+            
+                res.on("data", (chunk) => {
+                    body += chunk;
+                });
+            
+                res.on("end", () => {
+                    try {
+                        if (body.startsWith("429 Too Many Requests")) {
+                            const toomanyreq = new MessageEmbed()
+                            .setColor("RED")
+                            .setTitle("**MC STATUS**")
+                            .setDescription("**ERROR**: You must provide **existing** server")
+                            return msg.channel.send({embeds: [toomanyreq] })
+                        }
+                        let json = JSON.parse(body);
+                        if (json.online.toString() === "false") {
+                            const mcstatusoffline = new MessageEmbed()
+                            .setColor("RED")
+                            .setTitle("**MC STATUS**")
+                            .setDescription("**INFO**: Server is offline or unreachable")
+                            return msg.channel.send({embeds: [mcstatusoffline] })
+                        }
+                        const mcstatus = new MessageEmbed()
+                        .setColor("GREEN")
+                        .setTitle("**MC STATUS**")
+                        .addField("HOSTNAME", json.hostname)
+                        .addField("PORT", json.port.toString())
+                        .addField("IP", json.ip)
+                        .addField("MOTD", json.motd.clean[0])
+                        .addField("ONLINE", json.players.online.toString())
+                        .addField("MAX", json.players.max.toString())
+                        .addField("VERSION", json.version.toString())
+                        msg.channel.send({embeds: [mcstatus] })
+                    } catch (error) {
+                        console.error(error.message);
+                    };
+                });
+            
+            }).on("error", (error) => {
+                console.error(error.message);
+            });
+        }
+
+        if (msg.content == "1mcserverrm") {
+            msgauthor = await msg.guild.members.fetch(msg.author.id)
+            if(!msgauthor.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
+                const noperms = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**MC SERVER STATUS**")
+                .setDescription("**ERROR**: Permission denied")
+                return msg.channel.send({embeds: [noperms]})
+            }
+            let mcdata = fs.readFileSync("database.json", "utf8");
+            let mcdatabase = JSON.parse(mcdata)
+            let mcserverloc = "mcserver-" + msg.guild.id
+            mcdatabase[mcserverloc] = "none"
+            let mcdatabasejson = JSON.stringify(mcdatabase)
+            fs.writeFileSync("database.json", mcdatabasejson)
+            const successserverrm = new MessageEmbed()
+            .setColor("GREEN")
+            .setTitle("**MC SERVER STATUS**")
+            .setDescription("**SUCCESS**: Removed MC server")
+            msg.channel.send({embeds: [successserverrm]})
+        }
+
+        if (msg.content.startsWith("1mcpeserverset")) {
+            args = msg.content.split(' ');
+            msgauthor = await msg.guild.members.fetch(msg.author.id)
+            if(!msgauthor.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
+                const noperms = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**MCPE SERVER STATUS**")
+                .setDescription("**ERROR**: Permission denied")
+                return msg.channel.send({embeds: [noperms]})
+            }
+            if(args[1]==undefined) {
+                const undefinedargs = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**MCPE SERVER STATUS**")
+                .setDescription("**USAGE**: 1mcpeserverset <ip:port>")
+                return msg.channel.send({embeds: [undefinedargs]})
+            }
+            if(args[1]=="none") {
+                const noneset = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**MC SERVER STATUS**")
+                .setDescription("**ERROR**: You can't set server as none")
+                return msg.channel.send({embeds: [noneset]})
+            }
+            let mcdata = fs.readFileSync("database.json", "utf8");
+            let mcdatabase = JSON.parse(mcdata)
+            let mcserverloc = "mcpeserver-" + msg.guild.id
+            mcdatabase[mcserverloc] = args[1].toString()
+            let mcdatabasejson = JSON.stringify(mcdatabase)
+            fs.writeFileSync("database.json", mcdatabasejson)
+            const successserverset = new MessageEmbed()
+            .setColor("GREEN")
+            .setTitle("**MCPE SERVER STATUS**")
+            .setDescription("**SUCCESS**: Server set to " + args[1].toString())
+            msg.channel.send({embeds: [successserverset]})
+        }
+
+        if (msg.content == "1mcpeserver") {
+            let mcdata = fs.readFileSync("database.json", "utf8");
+            let mcdatabase = JSON.parse(mcdata)
+            let mcserverloc = "mcpeserver-" + msg.guild.id
+            if(mcdatabase[mcserverloc]==null||mcdatabase[mcserverloc]=="none") {
+                const noserver = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**MCPE SERVER STATUS**")
+                .setDescription("**ERROR**: No server configured")
+                return msg.channel.send({embeds: [noserver]})
+            }
+            https.get("https://api.mcsrvstat.us/bedrock/2/" + mcdatabase[mcserverloc],(res) => {
+                let body = "";
+            
+                res.on("data", (chunk) => {
+                    body += chunk;
+                });
+            
+                res.on("end", () => {
+                    try {
+                        if (body.startsWith("429 Too Many Requests")) {
+                            const toomanyreq = new MessageEmbed()
+                            .setColor("RED")
+                            .setTitle("**MC STATUS**")
+                            .setDescription("**ERROR**: You must provide **existing** server")
+                            return msg.channel.send({embeds: [toomanyreq] })
+                        }
+                        let json = JSON.parse(body);
+                        if (json.online.toString() === "false") {
+                            const mcstatusoffline = new MessageEmbed()
+                            .setColor("RED")
+                            .setTitle("**MC STATUS**")
+                            .setDescription("**INFO**: Server is offline or unreachable")
+                            return msg.channel.send({embeds: [mcstatusoffline] })
+                        }
+                        const mcstatus = new MessageEmbed()
+                        .setColor("GREEN")
+                        .setTitle("**MC STATUS**")
+                        .addField("HOSTNAME", json.hostname)
+                        .addField("PORT", json.port.toString())
+                        .addField("IP", json.ip)
+                        .addField("MOTD", json.motd.clean[0])
+                        .addField("ONLINE", json.players.online.toString())
+                        .addField("MAX", json.players.max.toString())
+                        .addField("VERSION", json.version.toString())
+                        msg.channel.send({embeds: [mcstatus] })
+                    } catch (error) {
+                        console.error(error.message);
+                    };
+                });
+            
+            }).on("error", (error) => {
+                console.error(error.message);
+            });
+        }
+
+        if (msg.content == "1mcpeserverrm") {
+            msgauthor = await msg.guild.members.fetch(msg.author.id)
+            if(!msgauthor.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
+                const noperms = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**MCPE SERVER STATUS**")
+                .setDescription("**ERROR**: Permission denied")
+                return msg.channel.send({embeds: [noperms]})
+            }
+            let mcdata = fs.readFileSync("database.json", "utf8");
+            let mcdatabase = JSON.parse(mcdata)
+            let mcserverloc = "mcpeserver-" + msg.guild.id
+            mcdatabase[mcserverloc] = "none"
+            let mcdatabasejson = JSON.stringify(mcdatabase)
+            fs.writeFileSync("database.json", mcdatabasejson)
+            const successserverrm = new MessageEmbed()
+            .setColor("GREEN")
+            .setTitle("**MCPE SERVER STATUS**")
+            .setDescription("**SUCCESS**: Removed MCPE server")
+            msg.channel.send({embeds: [successserverrm]})
+        }
+
+        if (msg.content == "1mc") {
+            const mchelp = new MessageEmbed()
+            .setColor("RED")
+            .setTitle("**MC STATUS**")
+            .setDescription("**USAGE**: 1mc <ip:port>")
+            return msg.channel.send({embeds: [mchelp] })
+        }
+
+        if (msg.content.startsWith("1mc ")) {
+            args = msg.content.split(' ');
+            https.get("https://api.mcsrvstat.us/2/" + args[1],(res) => {
+                let body = "";
+            
+                res.on("data", (chunk) => {
+                    body += chunk;
+                });
+            
+                res.on("end", () => {
+                    try {
+                        if (body.startsWith("429 Too Many Requests")) {
+                            const toomanyreq = new MessageEmbed()
+                            .setColor("RED")
+                            .setTitle("**MC STATUS**")
+                            .setDescription("**ERROR**: You must provide **existing** server")
+                            return msg.channel.send({embeds: [toomanyreq] })
+                        }
+                        let json = JSON.parse(body);
+                        if (json.online.toString() === "false") {
+                            const mcstatusoffline = new MessageEmbed()
+                            .setColor("RED")
+                            .setTitle("**MC STATUS**")
+                            .setDescription("**INFO**: Server is offline or unreachable")
+                            return msg.channel.send({embeds: [mcstatusoffline] })
+                        }
+                        const mcstatus = new MessageEmbed()
+                        .setColor("GREEN")
+                        .setTitle("**MC STATUS**")
+                        .addField("HOSTNAME", json.hostname)
+                        .addField("PORT", json.port.toString())
+                        .addField("IP", json.ip)
+                        .addField("MOTD", json.motd.clean[0])
+                        .addField("ONLINE", json.players.online.toString())
+                        .addField("MAX", json.players.max.toString())
+                        .addField("VERSION", json.version.toString())
+                        msg.channel.send({embeds: [mcstatus] })
+                    } catch (error) {
+                        console.error(error.message);
+                    };
+                });
+            
+            }).on("error", (error) => {
+                console.error(error.message);
+            });
+        }
+
+        if (msg.content == "1mcpe") {
+            const mcpehelp = new MessageEmbed()
+            .setColor("RED")
+            .setTitle("**MC STATUS**")
+            .setDescription("**USAGE**: 1mcpe <ip:port>")
+            return msg.channel.send({embeds: [mcpehelp] })
+        }
+
+        if (msg.content.startsWith("1mcpe ")) {
+            args = msg.content.split(' ');
+            https.get("https://api.mcsrvstat.us/bedrock/2/" + args[1],(res) => {
+                let body = "";
+            
+                res.on("data", (chunk) => {
+                    body += chunk;
+                });
+            
+                res.on("end", () => {
+                    try {
+                        if (body.startsWith("429 Too Many Requests")) {
+                            const toomanyreq = new MessageEmbed()
+                            .setColor("RED")
+                            .setTitle("**MC STATUS**")
+                            .setDescription("**API ERROR**: You must provide **existing** server")
+                            return msg.channel.send({embeds: [toomanyreq] })
+                        }
+                        let json = JSON.parse(body);
                         if (json.online.toString() === "false") {
                             const mcstatusoffline = new MessageEmbed()
                             .setColor("RED")
@@ -338,10 +677,14 @@ client.on("messageCreate", async msg => {
                         .addField("MAX", json.players.max.toString())
                         .addField("VERSION", json.version.toString())
                         msg.channel.send({embeds: [mcstatus] })
-                    });
-                } catch (error) {
-                    return msg.channel.send("**ERROR**: Unknown error")
-                }
+                    } catch (error) {
+                        console.error(error.message);
+                    };
+                });
+            
+            }).on("error", (error) => {
+                console.error(error.message);
+            });
         }
         
         if (msg.content === "1statusrel") {
@@ -362,18 +705,6 @@ client.on("messageCreate", async msg => {
             msg.channel.send({embeds: [statuschanged] })
         }
 
-        if (msg.content === "1help") {
-            msglog("help")
-            const helpembed = new MessageEmbed()
-            .setColor("GREEN")
-            .setTitle("**PHYC HELP**\n")
-            .addField("Moderation", "1kick|1ban|1clear|1poll")
-            .addField("Fun", "1work|1meme|1stonks")
-            .addField("AntiLink", "1antilink <on/off>")
-            .addField("Other", "1ping|1forceleave")
-            msg.channel.send({ embeds: [helpembed] })
-        }
-
         if (msg.content === "1ping") {
             const botpingem = new MessageEmbed()
             .setColor("GREEN")
@@ -385,7 +716,6 @@ client.on("messageCreate", async msg => {
         }
 
         if (msg.content.startsWith("1clear")) {
-            msglog("clear")
             let args = msg.content.split(' ');
             const permissiondeniedem = new MessageEmbed()
             .setColor("RED")
@@ -430,7 +760,6 @@ client.on("messageCreate", async msg => {
         }
 
         if (msg.content === "1meme") {
-            msglog("meme")
             randomnumber = randomnum(1, 500)
             const embed = new MessageEmbed()
             .setColor("GREEN")
@@ -441,8 +770,159 @@ client.on("messageCreate", async msg => {
             msg.channel.send({ embeds: [embed] })
         }
 
+        if (msg.content.startsWith("1seewarns")) {
+            var checkargs = msg.content.split('1seewarns ')[1]
+            if(checkargs==undefined) {
+                console.log("be")
+                const nowarnsargs = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**WARNS**")
+                .setDescription("**ERROR**: No arguments\n**USAGE**: 1warns @USER")
+                return msg.channel.send({embeds: [nowarnsargs]})
+            }
+            var member = msg.mentions.members.first();
+            const mentionuserem = new MessageEmbed()
+            .setColor("RED")
+            .setTitle("**WARN**")
+            .setDescription("**ERROR**: Invalid user!\n**USAGE**: 1warn @USER [REASON] (reason is not required)")
+            if(!member) return msg.channel.send({ embeds: [mentionuserem] })
+            let warndata = fs.readFileSync("database.json", "utf8");
+            let warndatabase = JSON.parse(warndata)
+            var warnloc = "warns-" + msg.guild.id + "-" + member.id
+            if(warndatabase[warnloc]==null||warndatabase[newvalue]==0) {
+                const noseewarns = new MessageEmbed()
+                .setColor("GREEN")
+                .setTitle("**WARNS**")
+                .setDescription(client.users.cache.get(member.id).username + " has no warns")
+                return msg.channel.send({embeds: [noseewarns]})
+            }
+            const warncountembed = new MessageEmbed()
+            .setColor("GREEN")
+            .setTitle("**WARNS**")
+            .setDescription(client.users.cache.get(member.id).username + " has " + warndatabase[warnloc] + " warn/s")
+            msg.channel.send({embeds: [warncountembed]})
+            // client.users.cache.get(member.id).username
+        }
+
+        if (msg.content.startsWith("1rmwarn")) {
+            var member = msg.mentions.members.first();
+            msgauthor = await msg.guild.members.fetch(msg.author.id)
+            const mentionuserem = new MessageEmbed()
+            .setColor("RED")
+            .setTitle("**WARN**")
+            .setDescription("**ERROR**: You need to mention user or invalid user!\n**USAGE**: 1warn @USER [REASON] (reason is not required)")
+            const permissiondeniedem = new MessageEmbed()
+            .setColor("RED")
+            .setTitle("**WARN**")
+            .setDescription("**ERROR**: Permission denied")
+            if(!msgauthor.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) return msg.channel.send({embeds: [permissiondeniedem]})
+            if(!member) return msg.channel.send({ embeds: [mentionuserem] })
+            if(!member.kickable) return msg.channel.send({embeds: [permissiondeniedem] })
+            amount = msg.content.split('1rmwarn <@!' + member.id + "> ")[1];
+            amountisdefined = false
+            if(amount!=undefined) {
+                definedamount = amount
+                amountisdefined = true
+            }
+            amount = msg.content.split('1rmwarn <@' + member.id + "> ")[1];
+            if(amount!=undefined) {
+                definedamount = amount
+                amountisdefined = true
+            }
+
+            if(!amountisdefined) {
+                const amountundefined = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**WARN**")
+                .setDescription("**ERROR**: Amount has not been defined\n**USAGE**: 1rmwarn <USER> <AMOUNT>")
+                return msg.channel.send({embeds: [amountundefined]})
+            }
+
+            let data = fs.readFileSync("database.json", "utf8");
+            let database = JSON.parse(data)
+            var newvalue = "warns-" + msg.guild.id + "-" + member.id
+            if(database[newvalue]==null||database[newvalue]==0) {
+                const nowarns = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**WARN**")
+                .setDescription("**ERROR**: User has no warns")
+                return msg.channel.send({embeds: [nowarns]})
+            }
+            if(database[newvalue]<definedamount) {
+                const nowarns = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**WARN**")
+                .setDescription("**ERROR**: You can't clear " + definedamount + " when user has only " + database[newvalue] + " warns")
+                return msg.channel.send({embeds: [nowarns]})
+            }
+            
+            database[newvalue] = database[newvalue] - definedamount
+            let databasejson = JSON.stringify(database)
+            fs.writeFileSync("database.json", databasejson)
+            const successrmwarn = new MessageEmbed()
+            .setColor("GREEN")
+            .setTitle("**WARN**")
+            .setDescription("**SUCCESS**: Removed " + client.users.cache.get(member.id).username + "'s " + definedamount + " warn/s")
+            msg.channel.send({embeds: [successrmwarn]})
+        }
+
+        if (msg.content.startsWith("1warn")) {
+            args = msg.content.split(' ')
+            reason = msg.content.split('1warn ' + args[1] + " ")[1];
+            let member = msg.mentions.members.first();
+            const mentionuserem = new MessageEmbed()
+            .setColor("RED")
+            .setTitle("**WARN**")
+            .setDescription("**ERROR**: You need to mention user or invalid user!\n**USAGE**: 1warn @USER [REASON] (reason is not required)")
+            const permissiondeniedem = new MessageEmbed()
+            .setColor("RED")
+            .setTitle("**WARN**")
+            .setDescription("**ERROR**: Permission denied")
+            if(!member) return msg.channel.send({ embeds: [mentionuserem] })
+            if(!member.kickable) return msg.channel.send({embeds: [permissiondeniedem] })
+            msgauthor = await msg.guild.members.fetch(msg.author.id)
+            if(!msgauthor.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
+                return msg.channel.send({ embeds: [permissiondeniedem] })
+            }
+            if(reason==undefined) {
+                reason = "None"
+            }
+            if(reason.startsWith("<@!")) {
+                const invalidusageem = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**WARN**")
+                .setDescription("**ERROR**: Invalid usage!\n**USAGE**: 1warn @USER [REASON] (reason is not required)")
+                return msg.channel.send({ embeds: [invalidusageem] });
+            }
+            if(member.user.bot) {
+                const userisbot = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**WARN**")
+                .setDescription("**ERROR**: You can't warn a bot")
+                return msg.channel.send({ embeds: [userisbot] });
+            }
+            let data = fs.readFileSync("database.json", "utf8");
+            let database = JSON.parse(data)
+            var newvalue = "warns-" + msg.guild.id + "-" + member.id
+            if(database[newvalue]==null) {
+                database[newvalue] = 0
+            }
+            database[newvalue]++
+            let databasejson = JSON.stringify(database)
+            fs.writeFileSync("database.json", databasejson)
+            const warnuserembed = new MessageEmbed()
+            .setColor("YELLOW")
+            .setTitle("**WARN**")
+            .setDescription("**Server**: " + msg.guild.name + "\n**Warn**: <@" + member + ">\n**Warned by**: <@" + msg.author + ">\n**Warns**: " + database[newvalue] + "\n**Reason**: " + reason)
+            member.send({embeds: [warnuserembed]})
+            const warnembed = new MessageEmbed()
+            .setColor("YELLOW")
+            .setTitle("**WARN**")
+            .setDescription("**Warn**: <@" + member + ">\n**Warned by**: <@" + msg.author + ">\n**Warns**: " + database[newvalue] + "\n**Reason**: " + reason)
+            msg.channel.send({ embeds: [warnembed] })
+        }
+
         if (msg.content.startsWith("1kick")) {
-            msglog("kick")
             reason = msg.content.split(' ');
             let member = msg.mentions.members.first();
             const mentionuserem = new MessageEmbed()
@@ -478,7 +958,6 @@ client.on("messageCreate", async msg => {
         }
 
         if (msg.content.startsWith("1ban")) {
-            msglog("ban")
             reason = msg.content.split(' ');
             let member = msg.mentions.members.first();
             const mentionuserem = new MessageEmbed()
@@ -514,7 +993,6 @@ client.on("messageCreate", async msg => {
         }
 
         if (msg.content.startsWith("1pg")) {
-            msglog("pg")
             args = msg.content.split(' ');
             if (args[1]==undefined) {
                 passwordsize = parseInt(21)
@@ -551,7 +1029,6 @@ client.on("messageCreate", async msg => {
         }
 
         if (msg.content == "1work") {
-            msglog("work")
             worknumber = randomnum(1, 11)
             switch(worknumber) {
                 case 1:
@@ -599,6 +1076,31 @@ client.on("messageCreate", async msg => {
             msg.channel.send({ embeds: [workembed] })
         }
 
+        if (msg.content.startsWith("1gay")) {
+            gaymember = msg.content.split("1gay ")[1];
+            let mumber = msg.mentions.members.first();
+            if(gaymember==undefined) {
+                member = msg.author
+            } else {
+                if(!mumber) {
+                    const gaytesterrorembed = new MessageEmbed()
+                    .setColor("RED")
+                    .setTitle("**🦄 GAY TEST 🦄**")
+                    .setDescription("**ERROR**: You need to mention a valid user!")
+                    return msg.channel.send({embeds: [gaytesterrorembed]})
+                }
+                member = client.users.cache.get(mumber.id)
+            }
+            const gaytestembed = new MessageEmbed()
+            .setColor("GREEN")
+            .setTitle("**🦄 GAY TEST 🦄**")
+            .setDescription(member.username + "'s Gay Test: " + randomnum(1, 101) + "/100%")
+            if(member.bot) {
+                gaytestembed.setFooter("But bot cannot be GAY, I guess so");
+            }
+            msg.channel.send({embeds: [gaytestembed]})
+        }
+
         if (msg.content.startsWith("1calc")) {
             args = msg.content.split(' ');
             number1 = parseInt(args[1])
@@ -628,7 +1130,7 @@ client.on("messageCreate", async msg => {
                 const wrongnumber = new MessageEmbed()
                 .setColor("RED")
                 .setTitle("CALCULATOR")
-                .setDescription("**ERROR**: Unknown error\n**USAGE**: 1calc <Number 1> <Operator> <Number 2>")
+                .setDescription("**ERROR**: Syntax error\n**USAGE**: 1calc <Number 1> <Operator> <Number 2>")
                 return msg.channel.send({embeds: [wrongnumber]})
             }
             const resultembed = new MessageEmbed()
@@ -639,7 +1141,6 @@ client.on("messageCreate", async msg => {
         }
 
         if (msg.content.startsWith("1poll")) {
-            msglog("poll")
             arguments = msg.content.split("1poll ")[1]
             if (arguments==undefined) {
                 const usage = new MessageEmbed()
@@ -671,9 +1172,9 @@ client.on("messageCreate", async msg => {
             .setTitle("**POLL**")
             .setDescription(arguments)
             try {
-                msg.channel.bulkDelete(1, true)
+                msg.delete(1000);
             } catch(error) {
-                msg.channel.send("Failed to delete command message!")
+                msg.channel.send("Failed to delete command message! " + error)
             }
             const pollmsg = await msg.channel.send({ embeds: [poll] })
             pollmsg.react("✅")
@@ -681,7 +1182,6 @@ client.on("messageCreate", async msg => {
         }
 
         if (msg.content.startsWith("1stonks")) {
-            msglog("stonks")
             arguments = msg.content.split("1stonks ")[1]
             args = msg.content.split(' ')
             if (args[1]==undefined) {
@@ -711,7 +1211,6 @@ client.on("messageCreate", async msg => {
         }
 
         if (msg.content.startsWith("1avatar")) {
-            msglog("avatar")
             arguments = msg.content.split("1stonks ")[1]
             let mumber = msg.mentions.members.first();
             if (!mumber) {
@@ -729,7 +1228,6 @@ client.on("messageCreate", async msg => {
         }
 
         if (msg.content === "1cat") {
-            msglog("cat")
             cat = await neko.sfw.meow()
             const catembed = new MessageEmbed()
             .setColor("ORANGE")
@@ -740,7 +1238,6 @@ client.on("messageCreate", async msg => {
         }
 
         if (msg.content === "1animeavatar") {
-            msglog("animeavatar")
             animeavatar = await neko.sfw.avatar()
             const animeavatarembed = new MessageEmbed()
             .setColor("ORANGE")
@@ -753,6 +1250,13 @@ client.on("messageCreate", async msg => {
         console.log("ERROR: " + error)
         return
     }
+
 })
 
-client.login("TOKEN")
+if(showlogintoken) {
+    console.log("Logging in as " + TOKEN + "..") 
+} else {
+    console.log("Logging in..")
+}
+
+client.login(TOKEN)
