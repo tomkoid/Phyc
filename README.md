@@ -63,4 +63,4 @@ $ node index.js
 - You can check perms by 1perms command. It should return you "No problem found".
 (if 1perms doesn't return you anything, then bot doesn't have permissions for sending messages)
 ---
-### Enjoy!
+​![​Header​](images/featured-built-with-love.jpg)
