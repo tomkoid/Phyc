@@ -1,7 +1,9 @@
  
  ​![​Header​](images/header.jpg)
+<p align=center><b>Discord open-source utility & fun bot</b></p>
 
-# Commands
+---
+​![​Commands​](images/commands.jpg)
 ---
 - 1help - Shows command list
 ---
@@ -36,7 +38,7 @@
 - 1servers - Shows in how many servers bot is
 ---
 
-# How to run
+​![​How to run​](images/howtorun.jpg)
 
 ***1. Clone this repository***
 ```
@@ -73,4 +75,4 @@ $ node index.js
 **Original BOT:** Phyc#4288
 
 
-​![​Header​](images/featured-built-with-love.svg) 
+​![​Built with love​](images/featured-built-with-love.svg) 
