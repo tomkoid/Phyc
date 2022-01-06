@@ -9,12 +9,12 @@ const https = require('https');
 
 // Constants
 const botname = "Phyc";
-const botownerid = "YOUR_ID";
+const botownerid = "422944426206167052";
 const showlogintoken = true; // If its true, then bot will be showing TOKEN in console
 const onlinemessage = false; // Sends message, that bot is online into specific channel
 const onlinemessagechannelid = "" // If above is true, you must set to this your channel ID
 const logmessages = true // Logs all messages sended in all channels, where Phyc has permission to view the channel
-const TOKEN = "YOUR_TOKEN";
+const TOKEN = "YOUR_TOKEeN";
 
 // Functions
 function randomString(size = parseInt(passwordsize)) {  
@@ -63,6 +63,7 @@ client.once("ready", client => {
     discordstatus = "Phyc | 1help"
     client.user.setActivity(discordstatus);
     if(onlinemessage) {
+        // If onlinemessagechannelid is not asigned, then it returns back to message event
         if(onlinemessagechannelid=="") {
             return console.log("ERROR: Nowhere to send online message (const onlinemessagechannelid)")
         }
@@ -78,12 +79,15 @@ client.once("ready", client => {
 client.on("messageCreate", async msg => {
     authormessage = msg.author.tag
 
+    // If sended message is by this bot, then it returns
     if (msg.author == client.user) {
         return
     }
 
+    // If user sended this message is bot, then it returns
     if (msg.author.bot) return;
 
+    // If logmessages bool is enabled, then it shows every message send, where is this bot
     if (logmessages) {
         let dateobject = new Date();
         let curtime = "[" + dateobject.getHours() + "h " + dateobject.getMinutes() + "m " + dateobject.getSeconds() + "s]"
@@ -102,6 +106,9 @@ client.on("messageCreate", async msg => {
     if(!msg.guild.me.permissions.has(Permissions.FLAGS.SEND_MESSAGES_IN_THREADS)) {
         return
     }
+    
+    /*Perms command, that checks if you have permissions, that this bot needs.
+    If bot doesn't output anything, then bot doesn't have permissions to send messages.*/
     if (msg.content == "1perms") {
         if(!msg.guild.me.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
             return msg.channel.send("**ERROR**: The bot doesn't have permission to manage messages.")
@@ -130,6 +137,24 @@ client.on("messageCreate", async msg => {
         if(!msg.guild.me.permissionsIn(msg.channel.id).has(Permissions.FLAGS.READ_MESSAGE_HISTORY)) {
             return msg.channel.send("**ERROR**: The bot doesn't have permission to read message history in this channel.")
         }
+
+
+        if(!msg.guild.me.permissions.has(Permissions.FLAGS.KICK_MEMBERS)) {
+            return msg.channel.send("**WARNING**: The bot doesn't have permission to kick members, which is required for kick command")
+        }
+
+        if(!msg.guild.me.permissions.has(Permissions.FLAGS.BAN_MEMBERS)) {
+            return msg.channel.send("**WARNING**: The bot doesn't have permission to ban members, which is required for ban command")
+        }
+
+        if(!msg.guild.me.permissionsIn(msg.channel.id).has(Permissions.FLAGS.KICK_MEMBERS)) {
+            return msg.channel.send("**ERROR**: The bot doesn't have permission to read message history in this channel.")
+        }
+
+        if(!msg.guild.me.permissionsIn(msg.channel.id).has(Permissions.FLAGS.BAN_MEMBERS)) {
+            return msg.channel.send("**ERROR**: The bot doesn't have permission to read message history in this channel.")
+        }
+
         const problemnotfound = new MessageEmbed()
         .setColor("GREEN")
         .setTitle("**PERMS**")
@@ -166,17 +191,8 @@ client.on("messageCreate", async msg => {
 
     // Commands
     try {
-        if (msg.content == "<@!921498042253852682>") {
-            if (msg.author === client.user) {
-                return
-            }
-            const phycembed = new MessageEmbed()
-            .setColor("GREEN")
-            .setTitle("PHYC")
-            .setDescription(`**You can use 1help to see all commands!**`)
-            .setFooter("Executed by " + msg.author.tag)
-            msg.channel.send({ embeds: [phycembed] })
-        } else if (msg.content == "<@921498042253852682>") {
+        // If someone will tag this bot, then it returns this embed
+        if (msg.content == "<@!921498042253852682>"||msg.content == "<@921498042253852682>") {
             if (msg.author === client.user) {
                 return
             }
@@ -188,12 +204,13 @@ client.on("messageCreate", async msg => {
             msg.channel.send({ embeds: [phycembed] })
         }
 
+        // Help command
         if (msg.content === "1help") {
             const helpembed = new MessageEmbed()
             .setColor("GREEN")
             .setTitle("**PHYC HELP**\n")
             .addField("Moderation", "1kick|1ban|1clear|1poll|1warn")
-            .addField("Fun", "1work|1meme|1stonks|1gay")
+            .addField("Fun", "1work|1meme|1stonks|1gay|1tpdne")
             .addField("AntiLink", "1antilink <on/off>")
             .addField("Minecraft Status", "1mc|1mcserver|1mcpeserver")
             .addField("Minecraft Status Management", "1mcserverset|1mcpeserverset|1mcserverrm|1mcpeserverrm")
@@ -201,6 +218,7 @@ client.on("messageCreate", async msg => {
             msg.channel.send({ embeds: [helpembed] })
         }
         
+        // If AntiLink is on, messages with URL links will be deleted
         if (msg.content.startsWith("https://")) {
             msgauthor = await msg.guild.members.fetch(msg.author.id)
             if(msgauthor.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
@@ -213,7 +231,9 @@ client.on("messageCreate", async msg => {
                 console.log(msg.author.tag + " sended link in " + msg.guild.id + " when autolink was on")
                 if(msg.guild.me.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
                     try {
-                        msg.delete(1000);
+                        msg.delete().catch((err) => {
+                            return
+                        });
                     } catch(error) {
                         console.log(error)
                     }
@@ -233,7 +253,9 @@ client.on("messageCreate", async msg => {
                 console.log(msg.author.tag + " sended link in " + msg.guild.id + " when autolink was on")
                 if(msg.guild.me.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
                     try {
-                        msg.delete(1000);
+                        msg.delete().catch((err) => {
+                            return
+                        })
                     } catch(error) {
                         console.log(error)
                     }
@@ -255,7 +277,9 @@ client.on("messageCreate", async msg => {
                 }
                 if(msg.guild.me.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
                     try {
-                        msg.delete(1000);
+                        msg.delete().catch((err) => {
+                            return
+                        });
                     } catch(error) {
                         console.log(error)
                     }
@@ -275,7 +299,9 @@ client.on("messageCreate", async msg => {
                 console.log(msg.author.tag + " sended link in " + msg.guild.id + " when autolink was on")
                 if(msg.guild.me.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
                     try {
-                        msg.delete(1000);
+                        msg.delete().catch((err) => {
+                            return
+                        });
                     } catch(error) {
                         console.log(error)
                     }
@@ -284,7 +310,9 @@ client.on("messageCreate", async msg => {
                 }
             }
         }
+        
 
+        // AntiLink toggle
         if (msg.content.startsWith("1antilink on")) {
             msgauthor = await msg.guild.members.fetch(msg.author.id)
             if(!msgauthor.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
@@ -329,6 +357,7 @@ client.on("messageCreate", async msg => {
             await msg.channel.send({embeds: [configured]})
         }
 
+        // If message author has permissions to MANAGE SERVER, then you can easily remove this bot from server
         if (msg.content == "1forceleave") {
             msgauthor = await msg.guild.members.fetch(msg.author.id)
             if (!msgauthor.permissions.has(Permissions.FLAGS.MANAGE_GUILD)) {
@@ -773,7 +802,6 @@ client.on("messageCreate", async msg => {
         if (msg.content.startsWith("1seewarns")) {
             var checkargs = msg.content.split('1seewarns ')[1]
             if(checkargs==undefined) {
-                console.log("be")
                 const nowarnsargs = new MessageEmbed()
                 .setColor("RED")
                 .setTitle("**WARNS**")
@@ -1017,10 +1045,13 @@ client.on("messageCreate", async msg => {
             }
             randompass = randomString()
             try {
+                console.log(randompass)
+                console.log(passwordsize.toString())
                 const embed = new MessageEmbed()
                 .setColor("GREEN")
                 .setTitle("**PASSWORD GENERATOR**")
-                .setDescription("**Random password**: " + randompass + "\n**Length**: " + passwordsize)
+                .addField("**Random password**: ", randompass)
+                .addField("**Length**: ", passwordsize.toString())
                 .setFooter("Do not give your password to others!")
                 msg.channel.send({ embeds: [embed] })
             } catch (error) {
@@ -1068,6 +1099,12 @@ client.on("messageCreate", async msg => {
                 gender = "Male"
             } else if (gendernumber === 2) {
                 gender = "Female"
+            }
+            if (gender=="Female") {
+                income = income - 200;
+            }
+            if (income<1) {
+                income = incone + 200;
             }
             const workembed = new MessageEmbed()
             .setColor("GREEN")
@@ -1172,7 +1209,11 @@ client.on("messageCreate", async msg => {
             .setTitle("**POLL**")
             .setDescription(arguments)
             try {
-                msg.delete(1000);
+                const msgedit = await msg.channel.messages.fetch(msg.id);
+                msgedit.delete()
+                .catch((err) => {
+                    return
+                });
             } catch(error) {
                 msg.channel.send("Failed to delete command message! " + error)
             }
@@ -1237,6 +1278,32 @@ client.on("messageCreate", async msg => {
             msg.channel.send({ embeds: [catembed] })
         }
 
+        if (msg.content === "1tpdne") {
+            https.get("https://fakeface.rest/face/json",(res) => {
+                let body = "";
+            
+                res.on("data", (chunk) => {
+                    body += chunk;
+                });
+            
+                res.on("end", () => {
+                    try {
+                        let json = JSON.parse(body);
+                        const tpdne = new MessageEmbed()
+                        .setColor("GREEN")
+                        .setTitle("**THIS PERSON DOES NOT EXIST**")
+                        .setImage(json.image_url)
+                        msg.channel.send({embeds: [tpdne]})
+                    } catch (error) {
+                        console.error(error.message);
+                    };
+                });
+            
+            }).on("error", (error) => {
+                console.error(error.message);
+            });
+        }
+
         if (msg.content === "1animeavatar") {
             animeavatar = await neko.sfw.avatar()
             const animeavatarembed = new MessageEmbed()
@@ -1253,10 +1320,18 @@ client.on("messageCreate", async msg => {
 
 })
 
+if(TOKEN=="YOUR_TOKEN") {
+    return console.log("You must set your bot's token in const TOKEN on line 17")
+}
+
 if(showlogintoken) {
     console.log("Logging in as " + TOKEN + "..") 
 } else {
     console.log("Logging in..")
 }
 
-client.login(TOKEN)
+client.login(TOKEN).catch((err) => {
+    console.log(err)
+    console.log("")
+    console.log("ERROR: Login Failed (the reason is above)")
+})
