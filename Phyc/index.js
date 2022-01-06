@@ -9,12 +9,12 @@ const https = require('https');
 
 // Constants
 const botname = "Phyc";
-const botownerid = "422944426206167052";
+const botownerid = "YOUR_ID";
 const showlogintoken = true; // If its true, then bot will be showing TOKEN in console
 const onlinemessage = false; // Sends message, that bot is online into specific channel
 const onlinemessagechannelid = "" // If above is true, you must set to this your channel ID
 const logmessages = true // Logs all messages sended in all channels, where Phyc has permission to view the channel
-const TOKEN = "YOUR_TOKEeN";
+const TOKEN = "YOUR_TOKEN";
 
 // Functions
 function randomString(size = parseInt(passwordsize)) {  
