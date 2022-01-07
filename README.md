@@ -30,12 +30,10 @@
 ---
 **Image commands:**
 - 1cat - Shows random cat image
-- 1wallpaper - Shows random wallpapers
 - 1animeavatar - Shows random anime avatar
 ---
 **Other:**
 - 1ping - Shows bot's ping and API ping
-- 1servers - Shows in how many servers bot is
 ---
 
 ​![​How to run​](images/howtorun.jpg)
