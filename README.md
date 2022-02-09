@@ -37,7 +37,7 @@
 ---
 **Accounts:**
 - `1nordvpn` - Generates random NordVPN account
-- `1nordvpnreport <Phyc Account ID>` - Reports given Phyc Account ID of NordVPN. Report **only** if account does'nt work or expired. 
+- `1nordvpnreport <Phyc Account ID>` - Reports given Phyc Account ID of NordVPN. Report **only** if account don't work or expired. 
 ---
 **Other:**
 - `1ping` - Shows bot's ping and API ping
