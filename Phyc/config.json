@@ -7,13 +7,14 @@
     "REPLIT_TOKENINSECRETS": false,
     "REPLIT_HTTPSERVERCODE": "<p>Bot is running!</p>",
 
-    "SHOW_TOKEN_ON_LOGIN": false,
+    "SHOW_TOKEN_ON_LOGIN": true,
     "SHOW_SYS_INFO_ON_LOGIN": true,
 
     "BOT_ONLINE_MESSAGE": false,
     "BOT_ONLINE_MESSAGE_CHANNEL_ID": "",
 
     "LOG_MESSAGES": true,
+    "LOG_MESSAGES_MINIMAL_SYNTAX": true,
 
     "ENABLE_DEBUG": false,
     "ENABLE_NORDVPN": true,

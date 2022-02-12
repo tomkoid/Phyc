@@ -9,8 +9,15 @@
   "author": "TheDarknessToma",
   "license": "ISC",
   "dependencies": {
-    "discord.js": "^13.3.1",
-    "nekos.life": "^2.0.7"
+    "@discordjs/rest": "^0.3.0",
+    "@discordjs/voice": "^0.7.5",
+    "discord-api-types": "^0.26.1",
+    "discord.js": "^13.4.0",
+    "https": "^1.0.0",
+    "minecraft-server-util": "^5.2.3",
+    "nekos.life": "^2.0.7",
+    "prompt-sync": "^4.2.0",
+    "request": "^2.88.2"
   },
   "keywords": []
 }

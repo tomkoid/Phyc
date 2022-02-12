@@ -28,7 +28,7 @@ if (!fs.existsSync("database.json")) {
     fs.writeFileSync("database.json", jsontemplate)
 }
 
-const version = "v2"; // Don't change version!
+const version = "v2.1"; // Don't change version!
 
 const usereplit = config.REPLIT_TOKENINSECRETS // Uses TOKEN from SECRETS and its useful for hosting on repl.it
 
@@ -41,7 +41,8 @@ const showsysinfo = config.SHOW_SYS_INFO_ON_LOGIN; // Shows system info when log
 const onlinemessage = config.BOT_ONLINE_MESSAGE; // Sends message, that bot is online into specific channel
 const onlinemessagechannelid = config.BOT_ONLINE_MESSAGE_CHANNEL_ID; // If above is true, you must set to this your channel ID
 
-const logmessages = config.LOG_MESSAGES; // Logs all messages sended in all channels, where Phyc has permission to view the channel
+const logmessages = config.LOG_MESSAGES; // Logs all messages sended in all channels, where Phyc has permission to view the channel into console
+const logmessagesminsyntax = config.LOG_MESSAGES_MINIMAL_SYNTAX
 
 const nordenabled = config.ENABLE_NORDVPN; // Enables NordVPN command
 const numberofnordaccounts = 23; // Count of NordVPN free accounts
@@ -134,10 +135,16 @@ client.on("messageCreate", async msg => {
 
     // If logmessages bool is enabled, then it shows every message send, where is this bot
     if (logmessages) {
-        let dateobject = new Date();
-        let curtime = "[" + dateobject.getHours() + "h " + dateobject.getMinutes() + "m " + dateobject.getSeconds() + "s]";
-        console.log("\n" + curtime + " " + authormessage + " sended message in " + msg.channel.name + " in " + msg.guild.name);
-        console.log("Content: " + msg.content);
+        if (logmessagesminsyntax) {
+            let dateobject = new Date();
+            let curtime = "[" + dateobject.getHours() + ":" + dateobject.getMinutes() + ":" + dateobject.getSeconds() + "]";
+            console.log("\n" + curtime + " " + authormessage + " (#" + msg.channel.name + " | " + msg.guild.name + ") > " + msg.content);
+        } else {
+            let dateobject = new Date();
+            let curtime = "[" + dateobject.getHours() + "h " + dateobject.getMinutes() + "m " + dateobject.getSeconds() + "s]";
+            console.log("\n" + curtime + " " + authormessage + " sended message in " + msg.channel.name + " in " + msg.guild.name);
+            console.log("Content: " + msg.content);
+        }
     }
 
     // Check if sended message is by webhook
@@ -256,6 +263,7 @@ client.on("messageCreate", async msg => {
             .setTitle("**PHYC HELP**\n")
             .addField("Moderation", "1kick|1ban|1clear|1poll|1warn")
             .addField("Fun", "1work|1meme|1stonks|1gay|1tpdne|1reverse")
+            .addField("Images", "1cat|1dog|1goose|1lizard")
             .addField("AntiLink", "1antilink <on/off>")
             .addField("Minecraft Status", "1mc|1mcserver|1mcpeserver")
             .addField("Minecraft Status Management", "1mcserverset|1mcpeserverset|1mcserverrm|1mcpeserverrm")
@@ -266,29 +274,7 @@ client.on("messageCreate", async msg => {
         }
         
         // If AntiLink is on, messages with URL links will be deleted
-        if (msg.content.startsWith("https://")) {
-            msgauthor = await msg.guild.members.fetch(msg.author.id)
-            if(msgauthor.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
-                return
-            }
-            let data = fs.readFileSync("database.json", "utf8");
-            let database = JSON.parse(data)
-            let antilinkloc = "antilink-" + msg.guild.id
-            if(database[antilinkloc] === "yes") {
-                console.log(msg.author.tag + " sended link in " + msg.guild.id + " when autolink was on")
-                if(msg.guild.me.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
-                    try {
-                        msg.delete().catch(() => {
-                            return
-                        });
-                    } catch(error) {
-                        console.log(error)
-                    }
-                } else {
-                    msg.channel.send("Bot has not permission to MANAGE_MESSAGES")
-                }
-            }
-        } else if (msg.content.startsWith("http://")) {
+        if (msg.content.includes("http://")||msg.content.includes("https://")) {
             msgauthor = await msg.guild.members.fetch(msg.author.id)
             if(msgauthor.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
                 return
@@ -307,10 +293,10 @@ client.on("messageCreate", async msg => {
                         console.log(error)
                     }
                 } else {
-                    msg.channel.send("Bot has not permission to MANAGE_MESSAGES")
+                    msg.channel.send("Bot doesn't have permission to MANAGE_MESSAGES")
                 }
             }
-        } else if (msg.content.startsWith("ftp://")) {
+        } else if (msg.content.includes("ftp://")||msg.content.includes("ftps://")) {
             msgauthor = await msg.guild.members.fetch(msg.author.id)
             if(msgauthor.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
                 return
@@ -331,10 +317,10 @@ client.on("messageCreate", async msg => {
                         console.log(error)
                     }
                 } else {
-                    msg.channel.send("Bot has not permission to MANAGE_MESSAGES")
+                    msg.channel.send("Bot doesn't have permission to MANAGE_MESSAGES")
                 }
             }
-        } else if (msg.content.startsWith("file://")) {
+        } else if (msg.content.include("file://")) {
             msgauthor = await msg.guild.members.fetch(msg.author.id)
             if(msgauthor.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
                 return
@@ -353,7 +339,7 @@ client.on("messageCreate", async msg => {
                         console.log(error)
                     }
                 } else {
-                    msg.channel.send("Bot has not permission to MANAGE_MESSAGES")
+                    msg.channel.send("Bot doesn't have permission to MANAGE_MESSAGES")
                 }
             }
         }
@@ -703,6 +689,13 @@ client.on("messageCreate", async msg => {
                             .setDescription("**INFO**: Server is offline or unreachable")
                             return msg.channel.send({embeds: [mcstatusoffline] })
                         }
+                        if (json.motd.clean[0].toString() === "This server is offline.") {
+                            let mcaternosstatusoffline = new MessageEmbed()
+                            .setColor("RED")
+                            .setTitle("**MC STATUS**")
+                            .setDescription("**INFO**: Server is offline")
+                            return msg.channel.send({embeds: [mcaternosstatusoffline] })
+                        }
                         const mcstatus = new MessageEmbed()
                         .setColor("GREEN")
                         .setTitle("**MC STATUS**")
@@ -757,6 +750,13 @@ client.on("messageCreate", async msg => {
                             .setTitle("**MC STATUS**")
                             .setDescription("**INFO**: Server is offline or unreachable")
                             return msg.channel.send({embeds: [mcstatusoffline] })
+                        }
+                        if (json.motd.clean[0].toString() === "This server is offline.") {
+                            let mcaternosstatusoffline = new MessageEmbed()
+                            .setColor("RED")
+                            .setTitle("**MC STATUS**")
+                            .setDescription("**INFO**: Server is offline")
+                            return msg.channel.send({embeds: [mcaternosstatusoffline] })
                         }
                         const mcstatus = new MessageEmbed()
                         .setColor("GREEN")
@@ -1107,8 +1107,6 @@ client.on("messageCreate", async msg => {
             }
             randompass = randomString()
             try {
-                console.log(randompass)
-                console.log(passwordsize.toString())
                 const embed = new MessageEmbed()
                 .setColor("GREEN")
                 .setTitle("**PASSWORD GENERATOR**")
@@ -1411,7 +1409,17 @@ client.on("messageCreate", async msg => {
         }
 
         if (msg.content === "1cat") {
-            cat = await neko.sfw.meow();
+            let apiworks = true;
+            cat = await neko.sfw.meow().catch(() => {
+                return apiworks = false;
+            });
+            if(!apiworks) {
+                let animalapierr = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**CAT**")
+                .setDescription("**ERROR**: API Error (nekos.life API)");
+                return msg.channel.send({embeds: [animalapierr]});
+            };
             const catembed = new MessageEmbed()
             .setColor("ORANGE")
             .setTitle("**CAT**")
@@ -1421,7 +1429,17 @@ client.on("messageCreate", async msg => {
         }
 
         if (msg.content === "1dog") {
-            dog = await neko.sfw.woof();
+            let apiworks = true;
+            dog = await neko.sfw.woof().catch(() => {
+                return apiworks = false;
+            });
+            if(!apiworks) {
+                let animalapierr = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**DOG**")
+                .setDescription("**ERROR**: API Error (nekos.life API)");
+                return msg.channel.send({embeds: [animalapierr]});
+            };
             const dogembed = new MessageEmbed()
             .setColor("ORANGE")
             .setTitle("**DOG**")
@@ -1431,7 +1449,17 @@ client.on("messageCreate", async msg => {
         }
 
         if (msg.content === "1goose") {
-            goose = await neko.sfw.goose();
+            let apiworks = true;
+            goose = await neko.sfw.goose().catch(() => {
+                return apiworks = false;
+            });
+            if(!apiworks) {
+                let animalapierr = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**GOOSE**")
+                .setDescription("**ERROR**: API Error (nekos.life API)");
+                return msg.channel.send({embeds: [animalapierr]});
+            };
             const gooseembed = new MessageEmbed()
             .setColor("ORANGE")
             .setTitle("**GOOSE**")
@@ -1441,7 +1469,17 @@ client.on("messageCreate", async msg => {
         }
 
         if (msg.content === "1lizard") {
-            lizard = await neko.sfw.lizard();
+            let apiworks = true;
+            lizard = await neko.sfw.lizard().catch(() => {
+                return apiworks = false;
+            });
+            if(!apiworks) {
+                let animalapierr = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**LIZARD**")
+                .setDescription("**ERROR**: API Error (nekos.life API)");
+                return msg.channel.send({embeds: [animalapierr]});
+            };;
             const lizardembed = new MessageEmbed()
             .setColor("ORANGE")
             .setTitle("**LIZARD**")
@@ -1675,28 +1713,6 @@ client.on("messageCreate", async msg => {
         }
     }
 
-    /*if (msg.content.startsWith("1type")) {
-        console.log(client.guilds.cache.get(msg.guild.id).me)
-        console.log("hello1")
-        if (msg.guild.me.permissions.has(Permissions.FLAGS.SEND_MESSAGES)) {
-            console.log("I have perms")
-        }
-        await client.guilds.cache.get(msg.guild.id).me.setNickname("something");
-        console.log("hello2")
-        msg.channel.sendTyping();
-        console.log("hello3")
-        setTimeout(async () => {
-            console.log("hello4")
-            let sendedmsg = await msg.channel.send("a");
-            console.log("hello5")
-            sendedmsg.delete().catch(() => {
-                console.log("\033[0;33m[DEBUG] Handled Error: Message can't be deleted, because it does not exist\033[0m");
-                return;
-            console.log("hello6")
-            });
-        }, 1000)
-    }*/
-
     if(msg.content.startsWith("1reverse")) {
         args = msg.content.split("1reverse ")[1]
         if(args==undefined) {
@@ -1716,6 +1732,49 @@ client.on("messageCreate", async msg => {
         msg.channel.send({embeds: [reversedem]});
     }
 
+    if(msg.content.startsWith("1ball")) {
+        if(msg.content.split("1ball ")[1] == undefined) {
+            let ballun = new MessageEmbed()
+            .setColor("RED")
+            .setTitle("**8BALL**")
+            .setDescription("**USAGE**: 1ball <question>")
+            return msg.channel.send({embeds: [ballun]})
+        }
+        let answers = ["Yes", "No", "I don't think so", "Maybe", "Hmmmm"];
+        let ballembed = new MessageEmbed()
+        .setColor("GREEN")
+        .setTitle("**8BALL**")
+        .addField("Question", "**" + msg.content.split("1ball ")[1] + "**")
+        .addField("Answer", answers[randomnum(0, 5)]);
+        return msg.channel.send({embeds: [ballembed]});
+    }
+
+    if(msg.content.startsWith("1owoify")) {
+        if(msg.content.split("1owoify ")[1] == undefined) {
+            let owoun = new MessageEmbed()
+            .setColor("RED")
+            .setTitle("**OWOIFY**")
+            .setDescription("**USAGE**: 1owoify <text>");
+            return msg.channel.send({embeds: [owoun]});
+        }
+        let apiworks = true;
+        let owoifiedtext = await neko.sfw.OwOify({text: msg.content.split("1owoify ")[1]}).catch(() => {
+            return apiworks = false;
+        });
+        if(!apiworks) {
+            let owoapierr = new MessageEmbed()
+            .setColor("RED")
+            .setTitle("**OWOIFY**")
+            .setDescription("**ERROR**: API Error (nekos.life API)");
+            return msg.channel.send({embeds: [owoapierr]});
+        }
+        let owoified = new MessageEmbed()
+        .setColor("GREEN")
+        .setTitle("**OWOIFY**")
+        .addField("OwOified text", "**" + owoifiedtext.owo + "**");
+        return msg.channel.send({embeds: [owoified]});
+    }
+
 })
 
 if (config.ENABLE_DEBUG) {
@@ -1727,19 +1786,21 @@ if(TOKEN=="YOUR_TOKEN") {
 }
 
 if(showsysinfo) {
-    console.log("System          " + os.platform().toUpperCase());
-    console.log("System Release  " + os.release());
-    console.log("Average Load    " + os.loadavg()[0] + "%");
-    console.log("CPU Arch:       " + os.arch());
-    console.log("Total Memory    " + os.totalmem() + " bytes");
-    console.log("Free Memory     " + os.freemem() + " bytes");
+    console.log("System         | " + os.platform().toUpperCase());
+    console.log("System Release | " + os.release());
+    console.log("Average Load   | " + os.loadavg()[0] + "%");
+    console.log("CPU Arch:      | " + os.arch());
+    console.log("Total Memory   | " + os.totalmem() + " bytes");
+    console.log("Free Memory    | " + os.freemem() + " bytes");
 }
 
 if(showlogintoken) {
     console.log("---------------------------------------------------------------------------");
+    console.log("\033[0;33m[" + botname + "] Running version " + version + "..\033[0m");
     console.log("\033[0;33m[" + botname + "] Logging in as " + TOKEN + "..\033[0m");
 } else {
     console.log("----------------------------------");
+    console.log("\033[0;33m[" + botname + "] Running version " + version + "..\033[0m");
     console.log("\033[0;33m[" + botname + "] Logging in..\033[0m");
 }
 
