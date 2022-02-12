@@ -45,7 +45,7 @@ const logmessages = config.LOG_MESSAGES; // Logs all messages sended in all chan
 const logmessagesminsyntax = config.LOG_MESSAGES_MINIMAL_SYNTAX
 
 const nordenabled = config.ENABLE_NORDVPN; // Enables NordVPN command
-const numberofnordaccounts = 23; // Count of NordVPN free accounts
+const numberofnordaccounts = 25; // Count of NordVPN free accounts
 
 const lastnordaccupdate = "2022/27/Jan"; // Last NordVPN update
 
@@ -320,7 +320,7 @@ client.on("messageCreate", async msg => {
                     msg.channel.send("Bot doesn't have permission to MANAGE_MESSAGES")
                 }
             }
-        } else if (msg.content.include("file://")) {
+        } else if (msg.content.includes("file://")) {
             msgauthor = await msg.guild.members.fetch(msg.author.id)
             if(msgauthor.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
                 return
@@ -1562,8 +1562,11 @@ client.on("messageCreate", async msg => {
                         .setTitle("NordVPN")
                         .addField("**Email**", nordacc.split(":")[0])
                         .addField("**Password**", nordacc.split(":")[1])
-                        .addField("**Phyc Account ID**", nordrandnum.toString())
-                        .setFooter("Last update from " + lastnordaccupdate);
+                        if(nordacc.split(":")[2]!=undefined) {
+                            nordembed.addField("**Expires**", nordacc.split(":")[2])
+                        }
+                        nordembed.addField("**Phyc Account ID**", nordrandnum.toString())
+                        nordembed.setFooter("Last update from " + lastnordaccupdate);
                         msg.channel.send({embeds: [nordembed]});
                     } catch (error) {
                         console.error(error.message);
@@ -1740,12 +1743,12 @@ client.on("messageCreate", async msg => {
             .setDescription("**USAGE**: 1ball <question>")
             return msg.channel.send({embeds: [ballun]})
         }
-        let answers = ["Yes", "No", "I don't think so", "Maybe", "Hmmmm"];
+        let answers = ["Yes.", "No.", "I don't think so.", "Maybe.", "Hmmmm..", "I guess.", "Yes, but no.", "No, but yes."];
         let ballembed = new MessageEmbed()
         .setColor("GREEN")
         .setTitle("**8BALL**")
         .addField("Question", "**" + msg.content.split("1ball ")[1] + "**")
-        .addField("Answer", answers[randomnum(0, 5)]);
+        .addField("Answer", answers[randomnum(0, 8)]);
         return msg.channel.send({embeds: [ballembed]});
     }
 
