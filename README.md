@@ -1,6 +1,6 @@
  
  ​![​Header​](images/header.jpg)
-<p align=center><b>Discord open-source utility & fun bot</b></p>
+<p align=center><b>Discord open-source JavaScript utility & fun bot</b></p>
 
 ---
 ​![​Commands​](images/commands.jpg)
@@ -20,6 +20,8 @@
 - `1work` - Generates random stats of your work and income
 - `1tpdne` - Generates image of person, that doesn't exist
 - `1reverse` - Reverses given word
+- `1ball` - Responds to given question
+- `1owoify` - OwOifies given word
 ---
 **MC commands:**
 - `1mc <IP:PORT>` - Shows status of mc server
@@ -33,7 +35,13 @@
 ---
 **Image commands:**
 - `1cat` - Shows random cat image
+- `1dog` - Shows random dog image
+- `1goose` - Shows random goose image
+- `1lizard` - Shows random lizard image
 - `1animeavatar` - Shows random anime avatar
+**AntiLink:**
+- `1antilink on` - Enables AntiLink
+- `1antilink off` - Disables AntiLink
 ---
 **Accounts:**
 - `1nordvpn` - Generates random NordVPN account
@@ -47,7 +55,7 @@
 
 ***1. Clone this repository***
 ```
-$ git clone https://github.com/TheDarknessToma/Phyc.git
+$ git clone https://github.com/TheDarknessToma/Phyc.git -b stable
 ```
 ***2. Get into Phyc directory***
 ```
