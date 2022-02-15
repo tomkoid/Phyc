@@ -1,8 +1,10 @@
 {
     "TOKEN": "YOUR_TOKEN",
-    
+    "CHECK_FOR_UPDATES": true,
+
     "BOTNAME": "Phyc",
     "BOTOWNERID": "422944426206167052",
+    "GIVE_AUTHOR_CREDITS": true,
     
     "REPLIT_TOKENINSECRETS": false,
     "REPLIT_HTTPSERVERCODE": "<p>Bot is running!</p>",

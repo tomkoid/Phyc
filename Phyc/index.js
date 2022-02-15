@@ -1,12 +1,13 @@
 // Imports
 const { Client, Intents, MessageEmbed, Permissions } = require("discord.js");
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.GUILD_MESSAGE_TYPING, Intents.FLAGS.DIRECT_MESSAGES] });
-const Crypto = require('crypto');
-const nekosapi = require('nekos.life');
+const Crypto = require('crypto'); // Used for 1pg
+const nekosapi = require('nekos.life'); // !This API don't work on repl.it! Used for image commands and for 1owoify
 const neko = new nekosapi();
-const fs = require("fs");
-const os = require('os');
-const https = require('https');
+const fs = require("fs"); // This module is used for reading config and database files
+const os = require('os'); // Used for system details
+const https = require('https'); // Used for requesting websites
+const axios = require('axios') // Used for update checker
 
 // Initialize
 let config;
@@ -28,14 +29,15 @@ if (!fs.existsSync("database.json")) {
     fs.writeFileSync("database.json", jsontemplate)
 }
 
-const version = "v2.1"; // Don't change version!
+const version = "v2.2"; // Don't change version!
 
 const usereplit = config.REPLIT_TOKENINSECRETS // Uses TOKEN from SECRETS and its useful for hosting on repl.it
 
 const botname = config.BOTNAME;
 const botownerid = config.BOTOWNERID;
+const giveauthorcredits = config.GIVE_AUTHOR_CREDITS // Adds author credits (github, info) to bot ping
 
-const showlogintoken = config.SHOW_TOKEN_ON_LOGIN; // If its true, then bot will be showing TOKEN in console
+const showlogintoken = config.SHOW_TOKEN_ON_LOGIN; // Shows TOKEN in console when logging in
 const showsysinfo = config.SHOW_SYS_INFO_ON_LOGIN; // Shows system info when logging in
 
 const onlinemessage = config.BOT_ONLINE_MESSAGE; // Sends message, that bot is online into specific channel
@@ -45,9 +47,6 @@ const logmessages = config.LOG_MESSAGES; // Logs all messages sended in all chan
 const logmessagesminsyntax = config.LOG_MESSAGES_MINIMAL_SYNTAX
 
 const nordenabled = config.ENABLE_NORDVPN; // Enables NordVPN command
-const numberofnordaccounts = 25; // Count of NordVPN free accounts
-
-const lastnordaccupdate = "2022/27/Jan"; // Last NordVPN update
 
 let TOKEN = fs.readFileSync("config.json");
 
@@ -55,15 +54,19 @@ if (usereplit) {
     TOKEN = process.env.TOKEN
     
     // Hosts HTTP server, that helps to run bot continuously
-    const server = require("./server")
+    const server = require("./server");
     server(); // Starts HTTP server
 } else {
-    TMP_TOKEN = JSON.parse(TOKEN)
-    TOKEN = TMP_TOKEN.TOKEN
+    TMP_TOKEN = JSON.parse(TOKEN);
+    TOKEN = TMP_TOKEN.TOKEN;
 }
+
+let replitnekoerr = new MessageEmbed().setColor("RED").setTitle("nekos.life API");
+replitnekoerr.addField("ERROR", "**nekos.life API can't be requested on repl.it, because repl.it started using FFD by Cloudflare (Family Friendly DNS), that blocks this API.**");
 
 // Functions
 function randomString(size = parseInt(passwordsize)) {  
+    // Returns random string (used by 1pg command)
     return Crypto
         .randomBytes(size = parseInt(passwordsize))
         .toString('base64')
@@ -72,8 +75,21 @@ function randomString(size = parseInt(passwordsize)) {
 
 function randomnum(min, max) {  
     return Math.floor(
+        // Generates random number (used by 1work, 1nordvpn, etc. commands)
         Math.random() * (max - min) + min
     )
+}
+
+function checkforupdates() {
+    axios.get("https://tomkoid.tk/phyc/latestversion.txt").then(res => {
+        if(res.data.toString()!=version) {
+            console.log("\033[0;33m[Updates] Update " + res + " found. Download it on GitHub!\033[0m");
+        } else {
+            console.log("\033[0;32m[Updates] No update found.\033[0m");
+        }
+    }).catch(() => {
+        console.log("\033[0;31m[Updates] Can't connect to tomkoid.tk")
+    });
 }
 
 function calculator(number1, operator, number2) {
@@ -102,6 +118,8 @@ function calculator(number1, operator, number2) {
 }
 
 imageurl = "none"
+let numberofnordaccounts;
+let lastnordaccupdate;
 
 // On ready
 client.once("ready", client => {
@@ -109,7 +127,7 @@ client.once("ready", client => {
     discordstatus = config.DISCORD_STATUS
     client.user.setActivity(discordstatus)
     if(onlinemessage) {
-        // If onlinemessagechannelid is not asigned, then it returns back to message event
+        // If onlinemessagechannelid is not assigned, then it returns back to message event
         if(onlinemessagechannelid=="") {
             return console.log("\033[0;31m[" + botname + "]: Channel ID has not been defined\033[0m")
         }
@@ -137,7 +155,103 @@ client.on("messageCreate", async msg => {
     if (logmessages) {
         if (logmessagesminsyntax) {
             let dateobject = new Date();
-            let curtime = "[" + dateobject.getHours() + ":" + dateobject.getMinutes() + ":" + dateobject.getSeconds() + "]";
+            let curseconds;
+            let curminutes;
+            let curhours;
+            switch(dateobject.getSeconds().toString()) {
+                case "1":
+                    curseconds = "01";
+                    break;
+                case "2":
+                    curseconds = "02";
+                    break;
+                case "3":
+                    curseconds = "03";
+                    break;
+                case "4":
+                    curseconds = "04";
+                    break;
+                case "5":
+                    curseconds = "05";
+                    break;
+                case "6":
+                    curseconds = "06";
+                    break;
+                case "7":
+                    curseconds = "07";
+                    break;
+                case "8":
+                    curseconds = "08";
+                    break;
+                case "9":
+                    curseconds = "09";
+                    break;
+                default:
+                    curseconds = dateobject.getSeconds();
+            }
+            switch(dateobject.getMinutes().toString()) {
+                case "1":
+                    curminutes = "01";
+                    break;
+                case "2":
+                    curminutes = "02";
+                    break;
+                case "3":
+                    curminutes = "03";
+                    break;
+                case "4":
+                    curminutes = "04";
+                    break;
+                case "5":
+                    curminutes = "05";
+                    break;
+                case "6":
+                    curminutes = "06";
+                    break;
+                case "7":
+                    curminutes = "07";
+                    break;
+                case "8":
+                    curminutes = "08";
+                    break;
+                case "9":
+                    curminutes = "09";
+                    break;
+                default:
+                    curminutes = dateobject.getMinutes();
+            }
+            switch(dateobject.getHours().toString()) {
+                case "1":
+                    curhours = "01";
+                    break;
+                case "2":
+                    curhours = "02";
+                    break;
+                case "3":
+                    curhours = "03";
+                    break;
+                case "4":
+                    curhours = "04";
+                    break;
+                case "5":
+                    curhours = "05";
+                    break;
+                case "6":
+                    curhours = "06";
+                    break;
+                case "7":
+                    curhours = "07";
+                    break;
+                case "8":
+                    curhours = "08";
+                    break;
+                case "9":
+                    curhours = "09";
+                    break;
+                default:
+                    curhours = dateobject.getHours();
+            }
+            let curtime = "[" + curhours + ":" + curminutes + ":" + curseconds + "]";
             console.log("\n" + curtime + " " + authormessage + " (#" + msg.channel.name + " | " + msg.guild.name + ") > " + msg.content);
         } else {
             let dateobject = new Date();
@@ -244,15 +358,19 @@ client.on("messageCreate", async msg => {
     // Commands
     try {
         // If someone will tag this bot, then it returns this embed
-        if (msg.content == "<@!921498042253852682>"||msg.content == "<@921498042253852682>") {
+        if (msg.content == "<@!" + client.user.id + ">"||msg.content == "<@" + client.user.id + ">") {
             if (msg.author === client.user) {
-                return
+                return;
             }
             const phycembed = new MessageEmbed()
-            .setColor("GREEN")
-            .setTitle("PHYC")
-            .setDescription(`**You can use 1help to see all commands!**`)
-            .setFooter("Executed by " + msg.author.tag)
+            phycembed.setColor("GREEN");
+            phycembed.setTitle("PHYC");
+            if(giveauthorcredits) {
+                phycembed.addField("INFO", "**Phyc is utility & fun open-source bot made by Tomkoid#4637**");
+                phycembed.addField("GITHUB", "https://github.com/Tomkoid/Phyc");
+            }
+            phycembed.addField("HELP", "**You can use 1help to see all commands!**");
+            phycembed.setFooter({text: "Executed by " + msg.author.tag});
             msg.channel.send({ embeds: [phycembed] })
         }
 
@@ -262,14 +380,14 @@ client.on("messageCreate", async msg => {
             .setColor("GREEN")
             .setTitle("**PHYC HELP**\n")
             .addField("Moderation", "1kick|1ban|1clear|1poll|1warn")
-            .addField("Fun", "1work|1meme|1stonks|1gay|1tpdne|1reverse")
-            .addField("Images", "1cat|1dog|1goose|1lizard")
+            .addField("Fun", "1work|1meme|1stonks|1gay|1reverse|1owoify|1pg")
+            .addField("Images", "1cat|1dog|1goose|1lizard|1tpdne")
             .addField("AntiLink", "1antilink <on/off>")
             .addField("Minecraft Status", "1mc|1mcserver|1mcpeserver")
             .addField("Minecraft Status Management", "1mcserverset|1mcpeserverset|1mcserverrm|1mcpeserverrm")
             .addField("Accounts", "1nordvpn|1nordvpnreport")
             .addField("Other", "1ping|1forceleave")
-            .setFooter("Version: " + version)
+            .setFooter({text: "Version: " + version})
             msg.channel.send({ embeds: [helpembed] })
         }
         
@@ -398,14 +516,14 @@ client.on("messageCreate", async msg => {
                 .setColor("RED")
                 .setTitle("Force-Leave")
                 .setDescription("**ERROR**: Permission denied")
-                .setFooter("Executed by " + msg.author.tag)
+                .setFooter({text: "Executed by " + msg.author.tag})
                 return msg.channel.send({embeds: [noadmin] })
             }
             const leave = new MessageEmbed()
             .setColor("GREEN")
             .setTitle("Force-Leave")
             .setDescription("**SUCCESS**: Bot leaved")
-            .setFooter("Executed by " + msg.author.tag)
+            .setFooter({text: "Executed by " + msg.author.tag})
             msg.channel.send({embeds: [leave] })
             msg.guild.leave()
         }
@@ -490,6 +608,13 @@ client.on("messageCreate", async msg => {
                             .setDescription("**INFO**: Server is offline")
                             return msg.channel.send({embeds: [mcaternosstatusoffline] })
                         }
+                        if (json.motd.clean[0].toString() === "Server not found.") {
+                            let mcaternosnotfound = new MessageEmbed()
+                            .setColor("RED")
+                            .setTitle("**MC STATUS**")
+                            .setDescription("**ERROR**: Server not found.")
+                            return msg.channel.send({embeds: [mcaternosnotfound] })
+                        }
                         const mcstatus = new MessageEmbed()
                         .setColor("GREEN")
                         .setTitle("**MC STATUS**")
@@ -507,7 +632,7 @@ client.on("messageCreate", async msg => {
                 });
             
             }).on("error", (error) => {
-                console.error(error.message);
+                console.error(error.message); // Prints catched error
             });
         }
 
@@ -612,6 +737,13 @@ client.on("messageCreate", async msg => {
                             .setDescription("**INFO**: Server is offline")
                             return msg.channel.send({embeds: [mcaternosstatusoffline] })
                         }
+                        if (json.motd.clean[0].toString() === "Server not found.") {
+                            let mcaternosnotfound = new MessageEmbed()
+                            .setColor("RED")
+                            .setTitle("**MC STATUS**")
+                            .setDescription("**ERROR**: Server not found.")
+                            return msg.channel.send({embeds: [mcaternosnotfound] })
+                        }
                         const mcstatus = new MessageEmbed()
                         .setColor("GREEN")
                         .setTitle("**MC STATUS**")
@@ -629,7 +761,7 @@ client.on("messageCreate", async msg => {
                 });
             
             }).on("error", (error) => {
-                console.error(error.message);
+                console.error(error.message); // Prints catched error
             });
         }
 
@@ -696,6 +828,13 @@ client.on("messageCreate", async msg => {
                             .setDescription("**INFO**: Server is offline")
                             return msg.channel.send({embeds: [mcaternosstatusoffline] })
                         }
+                        if (json.motd.clean[0].toString() === "Server not found.") {
+                            let mcaternosnotfound = new MessageEmbed()
+                            .setColor("RED")
+                            .setTitle("**MC STATUS**")
+                            .setDescription("**ERROR**: Server not found.")
+                            return msg.channel.send({embeds: [mcaternosnotfound] })
+                        }
                         const mcstatus = new MessageEmbed()
                         .setColor("GREEN")
                         .setTitle("**MC STATUS**")
@@ -713,7 +852,7 @@ client.on("messageCreate", async msg => {
                 });
             
             }).on("error", (error) => {
-                console.error(error.message);
+                console.error(error.message); // Prints catched error
             });
         }
 
@@ -758,6 +897,13 @@ client.on("messageCreate", async msg => {
                             .setDescription("**INFO**: Server is offline")
                             return msg.channel.send({embeds: [mcaternosstatusoffline] })
                         }
+                        if (json.motd.clean[0].toString() === "Server not found.") {
+                            let mcaternosnotfound = new MessageEmbed()
+                            .setColor("RED")
+                            .setTitle("**MC STATUS**")
+                            .setDescription("**ERROR**: Server not found.")
+                            return msg.channel.send({embeds: [mcaternosnotfound] })
+                        }
                         const mcstatus = new MessageEmbed()
                         .setColor("GREEN")
                         .setTitle("**MC STATUS**")
@@ -784,15 +930,15 @@ client.on("messageCreate", async msg => {
                 .setColor("RED")
                 .setTitle("**RELOAD STATUS**")
                 .setDescription("**ERROR**: You must be ADMIN of " + botname + " to use this command")
-                .setFooter("Executed by " + msg.author.tag)
+                .setFooter({text: "Executed by " + msg.author.tag})
                 return msg.channel.send({embeds: [statuspermissiondenied] })
             }
-            client.user.setActivity(config.DISCORD_STATUS)
+            client.user.setActivity(config.DISCORD_STATUS) // Reloads status
             const statuschanged = new MessageEmbed()
             .setColor("GREEN")
             .setTitle("**RELOAD STATUS**")
             .setDescription("**SUCCESS**: Reloaded status")
-            .setFooter("Executed by " + msg.author.tag)
+            .setFooter({text: "Executed by " + msg.author.tag})
             msg.channel.send({embeds: [statuschanged] })
         }
 
@@ -801,7 +947,7 @@ client.on("messageCreate", async msg => {
             .setColor("GREEN")
             .setTitle("PING")
             .setDescription(`**BOT Ping**: ${Date.now() - msg.createdTimestamp}ms\n**API Ping**: ${Math.round(client.ws.ping)}ms`)
-            .setFooter("Executed by " + msg.author.tag)
+            .setFooter({text: "Executed by " + msg.author.tag})
 
             msg.channel.send({ embeds: [botpingem] })
         }
@@ -843,11 +989,15 @@ client.on("messageCreate", async msg => {
             } catch(error) {
                 msg.channel.send("failed")
             }
-            const clearsuccess = new MessageEmbed()
+            let clearsuccess = new MessageEmbed()
             .setColor("GREEN")
             .setTitle("**CLEAR**")
             .setDescription("**SUCCESS**: Cleared " + args[1] + " message/s")
-            msg.channel.send({ embeds: [clearsuccess] })
+            msg.channel.send({ embeds: [clearsuccess] }).then(msg => {
+                setTimeout(() => msg.delete(), 3000);
+            }).catch(() => {
+                return;
+            })
         }
 
         if (msg.content === "1meme") {
@@ -857,7 +1007,7 @@ client.on("messageCreate", async msg => {
             .setTitle("**MEME**")
             .setDescription("Some meme for you")
             .setImage("https://ctk-api.herokuapp.com/meme/" + randomnumber)
-            .setFooter("Executed by " + msg.author.tag)
+            .setFooter({text: "Executed by " + msg.author.tag})
             msg.channel.send({ embeds: [embed] })
         }
 
@@ -1085,7 +1235,7 @@ client.on("messageCreate", async msg => {
         if (msg.content.startsWith("1pg")) {
             args = msg.content.split(' ');
             if (args[1]==undefined) {
-                passwordsize = parseInt(21)
+                passwordsize = parseInt(8)
                 randompass = randomString()
             } else {
                 passwordsize = args[1]
@@ -1102,7 +1252,15 @@ client.on("messageCreate", async msg => {
                 .setColor("RED")
                 .setTitle("**PASSWORD GENERATOR**")
                 .setDescription("**ERROR**: Password can be long only up to 100 characters")
-                .setFooter("Do not give your password to others!")
+                .setFooter({text: "Do not give your password to others!"})
+                return msg.channel.send({ embeds: [embed] })
+            }
+            if (passwordsize<1) {
+                const embed = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**PASSWORD GENERATOR**")
+                .setDescription("**ERROR**: Password can't be 0 or negative number long")
+                .setFooter({text: "Do not give your password to others!"})
                 return msg.channel.send({ embeds: [embed] })
             }
             randompass = randomString()
@@ -1112,14 +1270,14 @@ client.on("messageCreate", async msg => {
                 .setTitle("**PASSWORD GENERATOR**")
                 .addField("**Random password**: ", randompass)
                 .addField("**Length**: ", passwordsize.toString())
-                .setFooter("Do not give your password to others!")
+                .setFooter({text: "Do not give your password to others!"})
                 msg.channel.send({ embeds: [embed] })
             } catch (error) {
                 console.log(error);
             }
         }
 
-        if (msg.content == "1work") {
+        if (msg.content.startsWith("1work")) {
             worknumber = randomnum(1, 11)
             switch(worknumber) {
                 case 1:
@@ -1210,7 +1368,7 @@ client.on("messageCreate", async msg => {
             .setTitle("**🦄 GAY TEST 🦄**")
             .setDescription(member.username + "'s Gay Test: " + percentgay + "/100%\n" + member.username + " " + gaystatus);
             if(member.bot) {
-                gaytestembed.setFooter("But bot cannot be GAY, I guess so");
+                gaytestembed.setFooter({text: "But bot cannot be GAY, I guess so"});
             }
             msg.channel.send({embeds: [gaytestembed]});
         }
@@ -1252,7 +1410,7 @@ client.on("messageCreate", async msg => {
             .setTitle("**🦄 LESBIAN TEST 🦄**")
             .setDescription(member.username + "'s Lesbian Test: " + percentlesbian + "/100%\n" + member.username + " " + lesbianstatus);
             if(member.bot) {
-                gaytestembed.setFooter("But bot cannot be LESBIAN, I guess so");
+                gaytestembed.setFooter({text: "But bot cannot be LESBIAN, I guess so"});
             }
             msg.channel.send({embeds: [gaytestembed]});
         }
@@ -1409,6 +1567,9 @@ client.on("messageCreate", async msg => {
         }
 
         if (msg.content === "1cat") {
+            if(usereplit) {
+                return msg.channel.send({embeds: [replitnekoerr]})
+            }
             let apiworks = true;
             cat = await neko.sfw.meow().catch(() => {
                 return apiworks = false;
@@ -1429,6 +1590,9 @@ client.on("messageCreate", async msg => {
         }
 
         if (msg.content === "1dog") {
+            if(usereplit) {
+                return msg.channel.send({embeds: [replitnekoerr]})
+            }
             let apiworks = true;
             dog = await neko.sfw.woof().catch(() => {
                 return apiworks = false;
@@ -1449,6 +1613,9 @@ client.on("messageCreate", async msg => {
         }
 
         if (msg.content === "1goose") {
+            if(usereplit) {
+                return msg.channel.send({embeds: [replitnekoerr]})
+            }
             let apiworks = true;
             goose = await neko.sfw.goose().catch(() => {
                 return apiworks = false;
@@ -1469,6 +1636,9 @@ client.on("messageCreate", async msg => {
         }
 
         if (msg.content === "1lizard") {
+            if(usereplit) {
+                return msg.channel.send({embeds: [replitnekoerr]})
+            }
             let apiworks = true;
             lizard = await neko.sfw.lizard().catch(() => {
                 return apiworks = false;
@@ -1479,7 +1649,7 @@ client.on("messageCreate", async msg => {
                 .setTitle("**LIZARD**")
                 .setDescription("**ERROR**: API Error (nekos.life API)");
                 return msg.channel.send({embeds: [animalapierr]});
-            };;
+            };
             const lizardembed = new MessageEmbed()
             .setColor("ORANGE")
             .setTitle("**LIZARD**")
@@ -1516,7 +1686,20 @@ client.on("messageCreate", async msg => {
         }
 
         if (msg.content === "1animeavatar") {
-            animeavatar = await neko.sfw.avatar();
+            if(usereplit) {
+                return msg.channel.send({embeds: [replitnekoerr]})
+            }
+            let apiworks;
+            animeavatar = await neko.sfw.avatar().catch(() => {
+                return apiworks = false;
+            });
+            if(!apiworks) {
+                let nekoapierr = new MessageEmbed()
+                .setColor("RED")
+                .setTitle("**CAT**")
+                .setDescription("**ERROR**: API Error (nekos.life API)");
+                return msg.channel.send({embeds: [nekoapierr]});
+            };
             const animeavatarembed = new MessageEmbed()
             .setColor("ORANGE")
             .setTitle("**Anime Avatar**")
@@ -1539,7 +1722,7 @@ client.on("messageCreate", async msg => {
         .setDescription("Generating NordVPN account..");
         let generatingmsg = await msg.channel.send({embeds: [generatingnordaccem]});
         setTimeout(() => {
-            https.get("https://tomkoid.tk/nordvpnlist.txt",(res) => {
+            https.get("https://tomkoid.tk/nordvpn/nordvpnlist.txt",(res) => {
                 let body = "";
             
                 res.on("data", (chunk) => {
@@ -1548,26 +1731,48 @@ client.on("messageCreate", async msg => {
             
                 res.on("end", () => {
                     try {
-                        generatingmsg.delete(1000).catch(() => {
-                            if (config.ENABLE_DEBUG) {
-                                console.log("\033[0;33m[DEBUG] Handled Error: Message can't be deleted, because it does not exist\033[0m");
-                            }
-                            return;
-                        })
-                        let nordjson = JSON.parse(body);
-                        let nordrandnum = randomnum(0, numberofnordaccounts + 1);
-                        let nordacc = nordjson[nordrandnum];
-                        const nordembed = new MessageEmbed()
-                        .setColor("GREEN")
-                        .setTitle("NordVPN")
-                        .addField("**Email**", nordacc.split(":")[0])
-                        .addField("**Password**", nordacc.split(":")[1])
-                        if(nordacc.split(":")[2]!=undefined) {
-                            nordembed.addField("**Expires**", nordacc.split(":")[2])
-                        }
-                        nordembed.addField("**Phyc Account ID**", nordrandnum.toString())
-                        nordembed.setFooter("Last update from " + lastnordaccupdate);
-                        msg.channel.send({embeds: [nordembed]});
+                        https.get("https://tomkoid.tk/nordvpn/nordvpninfo.txt",(res) => {
+                            let infobody = "";
+                            res.on("data", (chunk) => {
+                                infobody += chunk;
+                            });
+
+                            res.on("end", () => {
+                                try {
+                                    numberofnordaccounts = infobody.toString().split(":")[1];
+                                    lastnordaccupdate = infobody.toString().split(":")[0];
+                                    generatingmsg.delete(1000).catch(() => {
+                                        if (config.ENABLE_DEBUG) {
+                                            console.log("\033[0;33m[DEBUG] Handled Error: Message can't be deleted, because it does not exist\033[0m");
+                                        }
+                                        return;
+                                    })
+                                    let nordjson = JSON.parse(body);
+                                    let nordrandnum = randomnum(0, parseInt(numberofnordaccounts) + 1);
+                                    let nordacc = nordjson[nordrandnum];
+                                    if(nordacc==undefined) {
+                                        const nordnetworkerr = new MessageEmbed()
+                                        .setColor("RED")
+                                        .setTitle("NordVPN")
+                                        .setDescription("**ERROR**: Failed to get data from web server");
+                                        return msg.channel.send({embeds: [nordnetworkerr]});
+                                    }
+                                    const nordembed = new MessageEmbed()
+                                    .setColor("GREEN")
+                                    .setTitle("NordVPN")
+                                    .addField("**Email**", nordacc.split(":")[0])
+                                    .addField("**Password**", nordacc.split(":")[1])
+                                    if(nordacc.split(":")[2]!=undefined) {
+                                        nordembed.addField("**Expires**", nordacc.split(":")[2])
+                                    }
+                                    nordembed.addField("**Phyc Account ID**", nordrandnum.toString())
+                                    nordembed.setFooter({text: "Last update from " + lastnordaccupdate});
+                                    msg.channel.send({embeds: [nordembed]});
+                                } catch(err) {
+                                    console.log("ERROR when loading nordvpn info: ", err.message)
+                                }
+                            })
+                        });
                     } catch (error) {
                         console.error(error.message);
                     };
@@ -1731,7 +1936,7 @@ client.on("messageCreate", async msg => {
         .setColor("RED")
         .setTitle("**REVERSE**")
         .addField("Reversed", reversed)
-        .setFooter("USAGE: 1reverse <word>");
+        .setFooter({text: "USAGE: 1reverse <word>"});
         msg.channel.send({embeds: [reversedem]});
     }
 
@@ -1753,6 +1958,9 @@ client.on("messageCreate", async msg => {
     }
 
     if(msg.content.startsWith("1owoify")) {
+        if(usereplit) {
+            return msg.channel.send({embeds: [replitnekoerr]})
+        }
         if(msg.content.split("1owoify ")[1] == undefined) {
             let owoun = new MessageEmbed()
             .setColor("RED")
@@ -1799,11 +2007,13 @@ if(showsysinfo) {
 
 if(showlogintoken) {
     console.log("---------------------------------------------------------------------------");
-    console.log("\033[0;33m[" + botname + "] Running version " + version + "..\033[0m");
+    if(config.CHECK_FOR_UPDATES) checkforupdates();
+    console.log("\033[0;33m[" + botname + "] Running on version " + version + ".\033[0m");
     console.log("\033[0;33m[" + botname + "] Logging in as " + TOKEN + "..\033[0m");
 } else {
     console.log("----------------------------------");
-    console.log("\033[0;33m[" + botname + "] Running version " + version + "..\033[0m");
+    if(config.CHECK_FOR_UPDATES) checkforupdates();
+    console.log("\033[0;33m[" + botname + "] Running on version " + version + "..\033[0m");
     console.log("\033[0;33m[" + botname + "] Logging in..\033[0m");
 }
 
@@ -1811,5 +2021,10 @@ client.login(TOKEN).catch((err) => {
     console.log("\033[0;31m----------------------------------\033[0m");
     console.log(err);
     console.log("\033[0;31m----------------------------------\033[0m");
-    console.log("\033[0;31m[" + botname + "]: Login Failed (the reason is above)\033[0m");
+    if(err.toString().includes('TOKEN_INVALID')) {
+        console.log("\033[0;31mCan't login to TOKEN, because the TOKEN is invalid.\033[0m")
+    } else if(err.toString().includes('reason: getaddrinfo EAI_AGAIN discord.com')) {
+        console.log("\033[0;31mIs your internet working?\033[0m")
+    }
+    console.log("\033[0;31m[" + botname + "]: Login Failed (the reason or error is above)\033[0m");
 });
