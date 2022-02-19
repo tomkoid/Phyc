@@ -47,6 +47,10 @@
 - `1nordvpn` - Generates random NordVPN account
 - `1nordvpnreport <Phyc Account ID>` - Reports given Phyc Account ID of NordVPN. Report **only** if account don't work or expired. 
 ---
+**Invites:**
+- `1botinvite` - Shows bot invite URL links (every one has different permissions)
+- `1invite` - Generates unlimited invite link to server
+---
 **Other:**
 - `1ping` - Shows bot's ping and API ping
 ---
