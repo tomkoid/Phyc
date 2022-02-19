@@ -1,25 +1,34 @@
 {
-    "TOKEN": "YOUR_TOKEN",
+    "TOKEN": "",
     "CHECK_FOR_UPDATES": true,
+    "TIMEZONE": "Europe/Prague",
+    "DISABLE_TIPS": false,
 
     "BOTNAME": "Phyc",
     "BOTOWNERID": "422944426206167052",
     "GIVE_AUTHOR_CREDITS": true,
     
-    "REPLIT_TOKENINSECRETS": false,
-    "REPLIT_HTTPSERVERCODE": "<p>Bot is running!</p>",
+    "REPLIT_USE": false,
+    "REPLIT_HTTPSERVERCODE": "path:website/index.html",
+    "REPLIT_HTTPSERVER_SHOW_LOGINS": false,
 
-    "SHOW_TOKEN_ON_LOGIN": true,
+    "SHOW_TOKEN_ON_LOGIN": false,
     "SHOW_SYS_INFO_ON_LOGIN": true,
 
     "BOT_ONLINE_MESSAGE": false,
     "BOT_ONLINE_MESSAGE_CHANNEL_ID": "",
 
-    "LOG_MESSAGES": true,
-    "LOG_MESSAGES_MINIMAL_SYNTAX": true,
+    "LOG_MESSAGES": false,
+    "LOG_MESSAGES_MINIMAL_SYNTAX": false,
+    "LOG_MESSAGES_INTO_FILE": false,
 
     "ENABLE_DEBUG": false,
     "ENABLE_NORDVPN": true,
 
-    "DISCORD_STATUS": "Phyc | 1help"
+    "DISCORD_STATUS": "Phyc | 1help",
+    "DISCORD_STATUS_2": "none",
+    "DISCORD_STATUS_3": "none",
+    "DISCORD_STATUS_4": "none",
+    "DISCORD_STATUS_5": "none",
+    "DISCORD_STATUS_INTERVAL": 3000
 }
