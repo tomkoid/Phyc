@@ -1,5 +1,5 @@
 {
-    "TOKEN": "",
+    "TOKEN": "YOUR_TOKEN",
     "CHECK_FOR_UPDATES": true,
     "TIMEZONE": "Europe/Prague",
     "DISABLE_TIPS": false,
