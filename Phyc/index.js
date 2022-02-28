@@ -16,7 +16,7 @@ if (fs.existsSync("config.json")) {
     const tmpconfig = fs.readFileSync("config.json");
     config = JSON.parse(tmpconfig);
 } else {
-    console.log("\033[0;33mconfig.json not found :(\033[0m");
+    console.log("\033[0;32m==> ERROR: config.json not found\033[0m");
     process.exit(0);
 }
 
@@ -38,7 +38,7 @@ if (config.LOG_MESSAGES_INTO_FILE) {
 // Imports from config.json
 
 // ↓ Don't change
-const version = "v3"; // Don't change the version! It can cause problems.
+const version = "v3.1"; // Don't change the version! It can cause problems.
 const debug = config.ENABLE_DEBUG;
 
 const usereplit = config.REPLIT_USE; // Uses TOKEN from SECRETS and its useful for hosting on repl.it
@@ -62,7 +62,7 @@ let TOKEN = fs.readFileSync("config.json");
 let timezone = config.TIMEZONE; // Sets timezone for logging messages
 
 if (usereplit) {
-    TOKEN = process.env.TOKEN
+    TOKEN = process.env.TOKEN;
     
     // Hosts HTTP server, that helps to run bot continuously
     const server = require("./server");
@@ -102,18 +102,29 @@ function checkforupdates() {
         // ↓ Gets data from mirror
         axios.get(mir.data.toString().split("\n")[0] + "latestversion.txt").then(res => {
             if(res.data.toString()!=version) {
-                console.log("\033[0;33m[Updates] Update " + res.data.toString() + " found. Download it on GitHub!\033[0m");
+                console.log("\033[0;33m==> [Updates] Update " + res.data.toString() + " found. Download it on GitHub!\033[0m");
             } else {
-                console.log("\033[0;32m[Updates] No update found.\033[0m");
+                console.log("\033[0;32m==> [Updates] No update found.\033[0m");
             }
         }).catch(() => {
             // Handling
-            console.log("\033[0;31m[Updates] Can't connect to mirror\033[0m");
+            console.log("\033[0;31m==> [Updates] Can't connect to mirror\033[0m");
         });
     }).catch(() => {
         // Handling
-        console.log("\033[0;31m[Updates] Can't connect to GitHub\033[0m");
+        console.log("\033[0;31m==> [Updates] Can't connect to GitHub\033[0m");
     })
+}
+
+function phycexit(statuscode) {
+    switch(statuscode) {
+        case 0:
+            console.log("\033[0;32m[Node] Exiting..\033[0m");
+            break;
+        case 1:
+            console.log("\033[0;31m[Node] Exiting..\033[0m");
+    }
+    process.exit(parseInt(statuscode));
 }
 
 // ↓ Question: https://stackoverflow.com/questions/15900485/correct-way-to-convert-size-in-bytes-to-kb-mb-gb-in-javascript
@@ -155,19 +166,21 @@ function calculator(number1, operator, number2) {
     return returnednumber;
 }
 
+// Globals
 imageurl = "none"
 let numberofnordaccounts;
 let lastnordaccupdate;
+let nordrandnum;
 
 // On ready
 client.once("ready", client => {
     // ↓ Logged message
-    console.log("\033[0;32m[" + botname + "] Logged in as " + client.user.tag +"!\033[0m")
+    console.log("\033[0;32m==> [" + botname + "] Logged in as " + client.user.tag +"!\033[0m")
     discordstatus = config.DISCORD_STATUS
     if(onlinemessage) {
         // If onlinemessagechannelid is not assigned, then it returns back to message event
         if(onlinemessagechannelid=="") {
-            return console.log("\033[0;31m[" + botname + "]: Channel ID has not been defined\033[0m")
+            return console.log("\033[0;31m==> [" + botname + "]: Channel ID has not been defined\033[0m")
         }
         try {
             // Get date
@@ -521,7 +534,7 @@ client.on("messageCreate", async msg => {
                 .setColor("RED")
                 .setTitle("**SERVER INVITE**")
                 .setDescription("**UNKNOWN ERROR**: Unable to create server invite");
-                if(debug) console.log("ERROR: " + err);
+                if(debug) console.log("==> ERROR: " + err);
                 return msg.reply({embeds: [inviteemerr]}).catch(() => {return});
             });
             if(debug) console.log("Invite: " + invite.toString());
@@ -544,7 +557,7 @@ client.on("messageCreate", async msg => {
             if(debug) {
                 console.log("Bot is stopping..")
             }
-            return process.exit(0);
+            return phycexit(0);
         }
 
         // If AntiLink is on, messages with URL links will be deleted
@@ -1090,7 +1103,14 @@ client.on("messageCreate", async msg => {
                 .setFooter({text: "Executed by " + msg.author.tag})
                 return msg.reply({embeds: [statuspermissiondenied] }).catch(() => {return})
             }
-            client.user.setActivity(config.DISCORD_STATUS) // Reloads status
+            setInterval(() => {
+                let statuslist = [discordstatus, config.DISCORD_STATUS_2, config.DISCORD_STATUS_3, config.DISCORD_STATUS_4, config.DISCORD_STATUS_5];
+                let currentstatus = statuslist[randomnum(0, 5)];
+                if(currentstatus=="none") {
+                    return;
+                }
+                client.user.setActivity(currentstatus);
+            }, config.DISCORD_STATUS_INTERVAL)
             const statuschanged = new MessageEmbed()
             .setColor("GREEN")
             .setTitle("**RELOAD STATUS**")
@@ -1149,7 +1169,7 @@ client.on("messageCreate", async msg => {
                     .setDescription("**UNKNOWN ERROR**: Can't clear " + clearamount + " messages!");
                     msg.reply({ embeds: [bulkdeletefailed] }).catch(() => {return});
                     if(debug) {
-                        console.log("ERROR:" + err);
+                        console.log("==> ERROR:" + err);
                     }
                     return;
                 })
@@ -1357,7 +1377,7 @@ client.on("messageCreate", async msg => {
                 let invalidusageem = new MessageEmbed()
                 .setColor("RED")
                 .setTitle("**BAN**")
-                .setDescription("**ERROR**: Invalid usage!\n**USAGE**: 1ban @USER [REASON] (reason is not required)")
+                .setDescription("**ERROR**: Invalid usage!\n**USAGE**: 1kick @USER [REASON] (reason is not required)")
                 return msg.reply({ embeds: [invalidusageem] }).catch(() => {return});
             }
             member.kick(reason[2]);
@@ -1714,7 +1734,7 @@ client.on("messageCreate", async msg => {
                     return msg.reply({embeds: [stonksapidown]});
                 })
                 return msg.reply({ embeds: [stonksembed] }).catch(() => {
-                    console.log("\033[0;33m[DEBUG] Handled Error: Unknown error\033[0m");
+                    console.log("\033[0;33m==> [DEBUG] Handled Error: Unknown error\033[0m");
                     return;
                 })
             }
@@ -1752,7 +1772,7 @@ client.on("messageCreate", async msg => {
                 imageurl = memberget.displayAvatarURL();
                 msg.reply(imageurl).catch(() => {return});
             }).catch(() => {
-                console.log("\033[0;33m[DEBUG] Handled Error: Cannot fetch user's avatar\033[0m");
+                console.log("\033[0;33m==> [DEBUG] Handled Error: Cannot fetch user's avatar\033[0m");
                 return;
             })
         }
@@ -1899,7 +1919,7 @@ client.on("messageCreate", async msg => {
             msg.reply({ embeds: [animeavatarembed] }).catch(() => {return});
         }
     } catch(error) {
-        console.log("ERROR: " + error);
+        console.log("==> ERROR: " + error);
         return;
     }
 
@@ -1934,12 +1954,21 @@ client.on("messageCreate", async msg => {
                                     lastnordaccupdate = infobody.toString().split(":")[0];
                                     generatingmsg.delete(1000).catch(() => {
                                         if (config.ENABLE_DEBUG) {
-                                            console.log("\033[0;33m[DEBUG] Handled Error: Message can't be deleted, because it does not exist\033[0m");
+                                            console.log("\033[0;33m==> [DEBUG] Handled Error: Message can't be deleted, because it does not exist\033[0m");
                                         }
                                         return;
                                     })
                                     let nordjson = JSON.parse(body);
-                                    let nordrandnum = randomnum(0, parseInt(numberofnordaccounts) + 1);
+                                    let loop = true;
+                                    while(loop==true) {
+                                        nordrandnum = randomnum(0, parseInt(numberofnordaccounts) + 1);
+                                        if(nordjson[nordrandnum]==undefined) {
+                                            continue;
+                                        } else {
+                                            break;
+                                        }
+                                    }
+                                    if(debug) console.log("Phyc account ID generated: " + nordrandnum.toString());
                                     let nordacc = nordjson[nordrandnum];
                                     if(nordacc==undefined) {
                                         const nordnetworkerr = new MessageEmbed()
@@ -1952,11 +1981,12 @@ client.on("messageCreate", async msg => {
                                     .setColor("GREEN")
                                     .setTitle("NordVPN")
                                     .addField("**Email**", nordacc.split(":")[0])
-                                    .addField("**Password**", nordacc.split(":")[1])
+                                    .addField("**Password**", nordacc.split(":")[1]);
                                     if(nordacc.split(":")[2]!=undefined) {
                                         nordembed.addField("**Expires**", nordacc.split(":")[2])
                                     }
-                                    nordembed.addField("**Phyc Account ID**", nordrandnum.toString())
+                                    nordembed.addField("**Phyc Account ID**", nordrandnum.toString());
+                                    nordembed.addField("**Info**", "This command isn't illegal. Accounts are from people, who want to share their account with others.");
                                     nordembed.setFooter({text: "Last update from " + lastnordaccupdate});
                                     msg.reply({embeds: [nordembed]}).catch(() => {return});
                                 } catch(err) {
@@ -2265,7 +2295,7 @@ if(showsysinfo) {
     console.log("System         | " + os.platform().toUpperCase());
     console.log("System Release | " + os.release());
     console.log("Average Load   | " + os.loadavg()[0] + "%");
-    console.log("CPU Arch:      | " + os.arch());
+    console.log("CPU Arch       | " + os.arch());
     console.log("Total Memory   | " + formatBytes(os.totalmem()));
     console.log("Free Memory    | " + formatBytes(os.freemem()));
 }
@@ -2273,20 +2303,20 @@ if(showsysinfo) {
 if(showlogintoken) console.log("---------------------------------------------------------------------------");
 if(!showlogintoken) console.log("----------------------------------");
 
-console.log("\033[0;33m[" + botname + "] Running on version " + version + ".\033[0m");
+console.log("\033[0;33m==> [" + botname + "] Running on version " + version + ".\033[0m");
 
 if(!config.DISABLE_TIPS) {
     if(logmessages) {
-        if(!logmessagesminsyntax) console.log("\033[0;33m[TIP] Replit has small console. Try to enable LOG_MESSAGES_MINIMAL_SYNTAX.\033[0m");
+        if(!logmessagesminsyntax) console.log("\033[0;33m==> [TIP] Replit has small console. Try to enable LOG_MESSAGES_MINIMAL_SYNTAX.\033[0m");
     }
 }
 
 if(showlogintoken) {
     if(config.CHECK_FOR_UPDATES) checkforupdates();
-    console.log("\033[0;33m[" + botname + "] Logging in as " + TOKEN + "..\033[0m");
+    console.log("\033[0;33m==> [" + botname + "] Logging in as " + TOKEN + "..\033[0m");
 } else {
     if(config.CHECK_FOR_UPDATES) checkforupdates();
-    console.log("\033[0;33m[" + botname + "] Logging in..\033[0m");
+    console.log("\033[0;33m==> [" + botname + "] Logging in..\033[0m");
 }
 
 client.login(TOKEN).catch((err) => {
@@ -2296,5 +2326,5 @@ client.login(TOKEN).catch((err) => {
     if(err.toString().includes('TOKEN_INVALID')) console.log("\033[0;31mCan't login to TOKEN, because the TOKEN is invalid.\033[0m");
     if(err.toString().includes('reason: getaddrinfo EAI_AGAIN discord.com')) console.log("\033[0;31mIs your internet working?\033[0m");
     console.log("\033[0;31m[" + botname + "]: Login Failed (the reason is above)\033[0m");
-    process.exit(1);
+    phycexit(1);
 });
