@@ -1,5 +1,11 @@
  
  ​![​Header​](images/header.jpg)
+<h1 align=center><b>
+ No longer maintained on GitHub
+ <p></p>
+ Development continued on <a href="https://gitlab.com/Tomkoid/Phyc">GitLab</a>
+</b></h1>
+
 <p align=center><b>Discord open-source JavaScript utility & fun bot</b></p>
 
 ---
